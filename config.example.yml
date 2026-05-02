@@ -1,0 +1,36 @@
+service:
+  name: grpc-sandbox
+  port: 50051
+  shutdown_timeout: 10s
+
+logging:
+  level: warn
+  add_source: false
+  include_trace_id: true
+
+tracing:
+  enabled: true
+  endpoint: alloy.lan:4317
+  protocol: grpc
+  insecure: false
+  sample_ratio: 1.0
+
+profiling:
+  enabled: true
+  server_address: https://pyroscope-ingest.lan
+  namespace: grpc-sandbox
+  basic_auth_user: ""
+  basic_auth_password: ""
+  tenant_id: ""
+
+database:
+  host: postgres.lan
+  port: "5432"
+  user: example_user
+  password: example_password
+  database: example
+  pool:
+    max_conns: 20
+    min_conns: 5
+    max_conn_life_time: 1h
+    max_conn_idle_time: 6h
