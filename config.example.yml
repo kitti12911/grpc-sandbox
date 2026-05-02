@@ -29,6 +29,8 @@ database:
     user: example_user
     password: example_password
     database: example
+    run_migrations: true
+    run_seeders: false
     pool:
         max_conns: 20
         min_conns: 5
