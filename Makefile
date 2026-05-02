@@ -25,6 +25,7 @@ fix:
 gen: gen-proto gen-go
 
 gen-go:
+	rm -rf gen/database
 	go generate ./internal/database
 
 gen-proto:
