@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"grpc-sandbox/internal/config"
+	"grpc-sandbox/internal/database"
 	"log/slog"
 	"os"
 	"time"
 
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
-	orm "github.com/kitti12911/lib-orm"
 	libconfig "github.com/kitti12911/lib-util/v2/config"
 	"github.com/kitti12911/lib-util/v2/logger"
 
@@ -63,14 +63,9 @@ func main() {
 	defer tracing.Shutdown(ctx, tp)
 
 	// Init database
-	db, err := orm.New(
-		ctx,
-		cfg.Database,
-		orm.WithApplicationName(cfg.Service.Name),
-		orm.WithTracing(cfg.Tracing.Enabled),
-	)
+	db, err := database.New(ctx, cfg)
 	if err != nil {
-		slog.ErrorContext(ctx, "failed to connect database", "error", err)
+		slog.ErrorContext(ctx, "failed to init database", "error", err)
 		os.Exit(1)
 	}
 	defer func() {

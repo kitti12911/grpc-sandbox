@@ -5,8 +5,9 @@ go 1.26.2
 require (
 	github.com/dromara/carbon/v2 v2.6.16
 	github.com/kitti12911/lib-monitor v1.3.0
-	github.com/kitti12911/lib-orm v1.0.0
+	github.com/kitti12911/lib-orm v1.1.0
 	github.com/kitti12911/lib-util/v2 v2.1.0
+	github.com/uptrace/bun v1.2.18
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )
@@ -45,7 +46,6 @@ require (
 	github.com/spf13/viper v1.21.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun v1.2.18 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

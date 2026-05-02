@@ -22,7 +22,10 @@ fix:
 	go fix ./...
 
 # ____________________ Generate Command ____________________
-gen: gen-proto
+gen: gen-proto gen-go
+
+gen-go:
+	go generate ./internal/database
 
 gen-proto:
 	rm -rf gen/grpc
