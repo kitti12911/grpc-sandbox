@@ -6,7 +6,7 @@ require (
 	github.com/dromara/carbon/v2 v2.6.16
 	github.com/kitti12911/lib-monitor v1.3.0
 	github.com/kitti12911/lib-orm v1.1.0
-	github.com/kitti12911/lib-util/v2 v2.1.0
+	github.com/kitti12911/lib-util/v2 v2.2.0
 	github.com/uptrace/bun v1.2.18
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
