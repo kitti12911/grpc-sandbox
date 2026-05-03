@@ -17,6 +17,9 @@ type userRepository interface {
 	CreateProfile(ctx context.Context, userID string, params CreateProfileParams) (*database.UserProfile, error)
 	CreateAddress(ctx context.Context, userProfileID string, params CreateAddressParams) (*database.UserAddress, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
+	DeleteAddressesByUserID(ctx context.Context, userID string) error
+	DeleteProfileByUserID(ctx context.Context, userID string) error
+	DeleteUser(ctx context.Context, userID string) (int64, error)
 }
 
 type databaseProvider interface {
@@ -110,4 +113,40 @@ func (s *Service) List(ctx context.Context, params ListParams) (*ListResult, err
 	}
 
 	return result, nil
+}
+
+func (s *Service) Delete(ctx context.Context, params DeleteParams) (int64, error) {
+	if err := s.validator.Validate(params); err != nil {
+		slog.WarnContext(ctx, "invalid delete user request", "error", err)
+		return 0, apperror.InvalidInput("id must be a valid uuid", err)
+	}
+
+	var affectedRows int64
+	if err := s.db.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.userRepository.DeleteAddressesByUserID(ctx, params.ID); err != nil {
+			return err
+		}
+
+		if err := s.userRepository.DeleteProfileByUserID(ctx, params.ID); err != nil {
+			return err
+		}
+
+		var err error
+		affectedRows, err = s.userRepository.DeleteUser(ctx, params.ID)
+		return err
+	}); err != nil {
+		if err, ok := errors.AsType[*apperror.Error](err); ok {
+			return 0, err
+		}
+
+		slog.ErrorContext(ctx, "failed to delete user", "error", err, "id", params.ID)
+		return 0, apperror.Internal("failed to delete user", err)
+	}
+
+	if affectedRows == 0 {
+		slog.WarnContext(ctx, "user not found", "id", params.ID)
+		return 0, apperror.NotFound("user not found", nil)
+	}
+
+	return affectedRows, nil
 }

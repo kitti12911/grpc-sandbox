@@ -15,6 +15,7 @@ type userService interface {
 	GetByID(ctx context.Context, params GetByIDParams) (*database.User, error)
 	Create(ctx context.Context, params CreateParams) (string, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
+	Delete(ctx context.Context, params DeleteParams) (int64, error)
 }
 
 type Handler struct {
@@ -78,4 +79,15 @@ func (h *Handler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest)
 	}
 
 	return &userv1.CreateUserResponse{Id: id}, nil
+}
+
+func (h *Handler) DeleteUser(ctx context.Context, req *userv1.DeleteUserRequest) (*userv1.DeleteUserResponse, error) {
+	affectedRows, err := h.userService.Delete(ctx, DeleteParams{
+		ID: req.GetId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &userv1.DeleteUserResponse{AffectedRows: affectedRows}, nil
 }

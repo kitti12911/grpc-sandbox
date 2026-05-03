@@ -10,6 +10,10 @@ type GetByIDParams struct {
 	ID string `validate:"required,uuid"`
 }
 
+type DeleteParams struct {
+	ID string `validate:"required,uuid"`
+}
+
 type CreateParams struct {
 	Email       string `validate:"required,email"`
 	Username    string `validate:"required"`

@@ -13,6 +13,7 @@ import (
 
 type stubUserRepository struct {
 	createUserFunc func(ctx context.Context, params CreateParams) (*database.User, error)
+	deleteUserFunc func(ctx context.Context, userID string) (int64, error)
 }
 
 func (r stubUserRepository) GetByID(context.Context, string) (*database.User, error) {
@@ -44,6 +45,21 @@ func (r stubUserRepository) CreateAddress(
 
 func (r stubUserRepository) List(context.Context, ListParams) (*ListResult, error) {
 	return nil, nil
+}
+
+func (r stubUserRepository) DeleteAddressesByUserID(context.Context, string) error {
+	return nil
+}
+
+func (r stubUserRepository) DeleteProfileByUserID(context.Context, string) error {
+	return nil
+}
+
+func (r stubUserRepository) DeleteUser(ctx context.Context, userID string) (int64, error) {
+	if r.deleteUserFunc == nil {
+		return 0, nil
+	}
+	return r.deleteUserFunc(ctx, userID)
 }
 
 type stubTransactionProvider struct{}
@@ -103,4 +119,55 @@ func TestServiceCreatePassesThroughAppError(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, want)
+}
+
+func TestServiceDelete(t *testing.T) {
+	service := NewService(stubUserRepository{
+		deleteUserFunc: func(_ context.Context, userID string) (int64, error) {
+			assert.Equal(t, "0198f8f0-0000-7000-8000-000000000999", userID)
+			return 1, nil
+		},
+	}, stubTransactionProvider{})
+
+	affectedRows, err := service.Delete(context.Background(), DeleteParams{
+		ID: "0198f8f0-0000-7000-8000-000000000999",
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), affectedRows)
+}
+
+func TestServiceDeleteValidatesRequest(t *testing.T) {
+	called := false
+	service := NewService(stubUserRepository{
+		deleteUserFunc: func(context.Context, string) (int64, error) {
+			called = true
+			return 0, nil
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Delete(context.Background(), DeleteParams{})
+
+	require.Error(t, err)
+	appErr, ok := err.(*apperror.Error)
+	require.True(t, ok)
+	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
+	assert.False(t, called)
+}
+
+func TestServiceDeleteReturnsNotFound(t *testing.T) {
+	service := NewService(stubUserRepository{
+		deleteUserFunc: func(context.Context, string) (int64, error) {
+			return 0, nil
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Delete(context.Background(), DeleteParams{
+		ID: "0198f8f0-0000-7000-8000-000000000999",
+	})
+
+	require.Error(t, err)
+	appErr, ok := err.(*apperror.Error)
+	require.True(t, ok)
+	assert.Equal(t, apperror.CodeNotFound, appErr.Code())
 }
