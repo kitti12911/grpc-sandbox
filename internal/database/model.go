@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -9,13 +10,14 @@ import (
 type User struct {
 	bun.BaseModel `bun:"table:users,alias:u"`
 
-	ID          string    `bun:"id,pk,type:uuid,default:uuidv7()"`
-	Email       string    `bun:"email,notnull"`
-	Username    string    `bun:"username,notnull"`
-	DisplayName *string   `bun:"display_name"`
-	Status      string    `bun:"status,notnull"`
-	CreatedAt   time.Time `bun:"created_at,notnull,default:now()"`
-	UpdatedAt   time.Time `bun:"updated_at,notnull,default:now()"`
+	ID          string       `bun:"id,pk,type:uuid,default:uuidv7()"`
+	Email       string       `bun:"email,notnull"`
+	Username    string       `bun:"username,notnull"`
+	DisplayName *string      `bun:"display_name"`
+	Status      string       `bun:"status,notnull"`
+	CreatedAt   time.Time    `bun:"created_at,notnull,default:now()"`
+	UpdatedAt   time.Time    `bun:"updated_at,notnull,default:now()"`
+	DeletedAt   sql.NullTime `bun:"deleted_at,soft_delete,nullzero"`
 
 	Profile *UserProfile `bun:"rel:has-one,join:id=user_id"`
 }

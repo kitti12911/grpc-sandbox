@@ -17,8 +17,6 @@ type userRepository interface {
 	CreateProfile(ctx context.Context, userID string, params CreateProfileParams) (*database.UserProfile, error)
 	CreateAddress(ctx context.Context, userProfileID string, params CreateAddressParams) (*database.UserAddress, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
-	DeleteAddressesByUserID(ctx context.Context, userID string) error
-	DeleteProfileByUserID(ctx context.Context, userID string) error
 	DeleteUser(ctx context.Context, userID string) (int64, error)
 }
 
@@ -123,14 +121,6 @@ func (s *Service) Delete(ctx context.Context, params DeleteParams) (int64, error
 
 	var affectedRows int64
 	if err := s.db.Transaction(ctx, func(ctx context.Context) error {
-		if err := s.userRepository.DeleteAddressesByUserID(ctx, params.ID); err != nil {
-			return err
-		}
-
-		if err := s.userRepository.DeleteProfileByUserID(ctx, params.ID); err != nil {
-			return err
-		}
-
 		var err error
 		affectedRows, err = s.userRepository.DeleteUser(ctx, params.ID)
 		return err

@@ -136,25 +136,9 @@ func (r *repository) List(ctx context.Context, params ListParams) (*ListResult, 
 	}, nil
 }
 
-func (r *repository) DeleteAddressesByUserID(ctx context.Context, userID string) error {
-	_, err := r.db.IDB(ctx).NewDelete().
-		Model((*database.UserAddress)(nil)).
-		Where("user_profile_id IN (SELECT id FROM user_profiles WHERE user_id = ?)", userID).
-		Exec(ctx)
-	return err
-}
-
-func (r *repository) DeleteProfileByUserID(ctx context.Context, userID string) error {
-	_, err := r.db.IDB(ctx).NewDelete().
-		Model((*database.UserProfile)(nil)).
-		Where("user_id = ?", userID).
-		Exec(ctx)
-	return err
-}
-
 func (r *repository) DeleteUser(ctx context.Context, userID string) (int64, error) {
 	result, err := r.db.IDB(ctx).NewDelete().
-		Model((*database.User)(nil)).
+		Model(&database.User{}).
 		Where("id = ?", userID).
 		Exec(ctx)
 	if err != nil {

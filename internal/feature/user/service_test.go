@@ -47,14 +47,6 @@ func (r stubUserRepository) List(context.Context, ListParams) (*ListResult, erro
 	return nil, nil
 }
 
-func (r stubUserRepository) DeleteAddressesByUserID(context.Context, string) error {
-	return nil
-}
-
-func (r stubUserRepository) DeleteProfileByUserID(context.Context, string) error {
-	return nil
-}
-
 func (r stubUserRepository) DeleteUser(ctx context.Context, userID string) (int64, error) {
 	if r.deleteUserFunc == nil {
 		return 0, nil

@@ -26,7 +26,7 @@ gen: gen-proto gen-go
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/cmd/fieldmapgen@v1.4.1 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
+	go run github.com/kitti12911/lib-orm/v2/cmd/fieldmapgen@v2.0.0 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
 
 gen-proto:
 	rm -rf gen/grpc
