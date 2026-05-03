@@ -42,8 +42,8 @@ func ErrorHandler() grpc.UnaryServerInterceptor {
 			}
 		}
 
-		if _, ok := status.FromError(err); ok {
-			return nil, err
+		if st, ok := status.FromError(err); ok {
+			return nil, status.Error(st.Code(), messageWithTraceID(st.Message(), traceID))
 		}
 
 		logAttrs := []any{
@@ -62,12 +62,12 @@ func ErrorHandler() grpc.UnaryServerInterceptor {
 				grpcCode = codes.Internal
 			}
 
-			return nil, status.Error(grpcCode, appErr.Message())
+			return nil, status.Error(grpcCode, messageWithTraceID(appErr.Message(), traceID))
 		}
 
 		slog.ErrorContext(ctx, "unexpected error", logAttrs...)
 
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, status.Error(codes.Internal, messageWithTraceID("internal server error", traceID))
 	}
 }
 
@@ -78,4 +78,12 @@ func extractTraceID(ctx context.Context) string {
 	}
 
 	return ""
+}
+
+func messageWithTraceID(message, traceID string) string {
+	if traceID == "" {
+		return message
+	}
+
+	return message + " (trace_id=" + traceID + ")"
 }
