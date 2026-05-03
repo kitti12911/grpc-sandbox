@@ -6,11 +6,10 @@ import (
 	"grpc-sandbox/internal/database/migrations"
 	"grpc-sandbox/internal/database/seeders"
 
-	orm "github.com/kitti12911/lib-orm"
-	"github.com/uptrace/bun"
+	orm "github.com/kitti12911/lib-orm/v2"
 )
 
-func New(ctx context.Context, cfg *config.Config) (*bun.DB, error) {
+func New(ctx context.Context, cfg *config.Config) (*orm.DB, error) {
 	db, err := orm.New(
 		ctx,
 		cfg.Database,

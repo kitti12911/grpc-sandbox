@@ -7,12 +7,13 @@ import (
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm"
+	orm "github.com/kitti12911/lib-orm/v2"
 	"github.com/kitti12911/lib-util/v3/pagination"
 )
 
 type userService interface {
 	GetByID(ctx context.Context, params GetByIDParams) (*database.User, error)
+	Create(ctx context.Context, params CreateParams) (string, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
 }
 
@@ -68,4 +69,13 @@ func (h *Handler) ListUsers(ctx context.Context, req *userv1.ListUsersRequest) (
 			TotalSize:  pageOut.TotalSize,
 		},
 	}, nil
+}
+
+func (h *Handler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
+	id, err := h.userService.Create(ctx, createParamsFromProto(req.GetUser()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &userv1.CreateUserResponse{Id: id}, nil
 }

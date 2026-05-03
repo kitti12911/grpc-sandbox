@@ -4,11 +4,11 @@ go 1.26.2
 
 require (
 	github.com/dromara/carbon/v2 v2.6.16
-	github.com/go-playground/validator/v10 v10.30.2
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
 	github.com/kitti12911/lib-monitor v1.5.0
-	github.com/kitti12911/lib-orm v1.5.0
+	github.com/kitti12911/lib-orm/v2 v2.0.0
 	github.com/kitti12911/lib-util/v3 v3.0.1
+	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
 	go.opentelemetry.io/otel/trace v1.43.0
@@ -19,19 +19,21 @@ require (
 require (
 	github.com/uptrace/bun/dbfixture v1.2.18 // indirect
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18 // indirect
-	github.com/uptrace/bun/driver/pgdriver v1.2.18 // indirect
+	github.com/uptrace/bun/driver/pgdriver v1.2.18
 	github.com/uptrace/bun/extra/bunotel v1.2.18 // indirect
 )
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.10.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.30.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grafana/pyroscope-go v1.2.8 // indirect
@@ -41,6 +43,7 @@ require (
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect

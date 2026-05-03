@@ -4,7 +4,7 @@ import (
 	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/apperror"
 
-	orm "github.com/kitti12911/lib-orm"
+	orm "github.com/kitti12911/lib-orm/v2"
 	"github.com/uptrace/bun"
 )
 

@@ -80,7 +80,7 @@ func main() {
 
 	// Init repositories, services, and handlers
 	userRepository := user.NewRepository(db)
-	userService := user.NewService(userRepository)
+	userService := user.NewService(userRepository, db)
 	userHandler := user.NewHandler(userService)
 
 	// Start gRPC server

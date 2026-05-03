@@ -5,7 +5,7 @@ import (
 
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
-	liborm "github.com/kitti12911/lib-orm"
+	liborm "github.com/kitti12911/lib-orm/v2"
 	"github.com/kitti12911/lib-util/v3/logger"
 )
 
