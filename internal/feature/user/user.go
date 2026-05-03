@@ -38,6 +38,15 @@ type CreateAddressParams struct {
 	CountryCode *string
 }
 
+type UpdateParams struct {
+	ID          string `validate:"required,uuid"`
+	Email       string `validate:"required,email"`
+	Username    string `validate:"required"`
+	DisplayName *string
+	Status      string `validate:"required,oneof=active disabled pending"`
+	Profile     *CreateProfileParams
+}
+
 type ListParams struct {
 	Limit   int
 	Offset  int

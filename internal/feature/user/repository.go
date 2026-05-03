@@ -106,6 +106,84 @@ func (r *repository) CreateAddress(
 	return address, nil
 }
 
+func (r *repository) GetProfileIDByUserID(ctx context.Context, userID string) (string, error) {
+	var profileID string
+	if err := r.db.IDB(ctx).NewSelect().
+		Model((*database.UserProfile)(nil)).
+		Column("id").
+		Where("user_id = ?", userID).
+		Scan(ctx, &profileID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return profileID, nil
+}
+
+func (r *repository) UpdateUser(ctx context.Context, params UpdateParams) (int64, error) {
+	result, err := r.db.IDB(ctx).NewUpdate().
+		Model((*database.User)(nil)).
+		Set("email = ?", params.Email).
+		Set("username = ?", params.Username).
+		Set("display_name = ?", params.DisplayName).
+		Set("status = ?", params.Status).
+		Set("updated_at = now()").
+		Where("id = ?", params.ID).
+		Exec(ctx)
+	if err != nil {
+		if isUniqueViolation(err) {
+			return 0, apperror.AlreadyExist("user already exists", err)
+		}
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (r *repository) UpdateProfileByUserID(
+	ctx context.Context,
+	userID string,
+	params CreateProfileParams,
+) (int64, error) {
+	result, err := r.db.IDB(ctx).NewUpdate().
+		Model((*database.UserProfile)(nil)).
+		Set("first_name = ?", params.FirstName).
+		Set("last_name = ?", params.LastName).
+		Set("phone_number = ?", params.PhoneNumber).
+		Set("updated_at = now()").
+		Where("user_id = ?", userID).
+		Exec(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (r *repository) UpdateAddressByProfileID(
+	ctx context.Context,
+	userProfileID string,
+	params CreateAddressParams,
+) (int64, error) {
+	result, err := r.db.IDB(ctx).NewUpdate().
+		Model((*database.UserAddress)(nil)).
+		Set("line1 = ?", params.Line1).
+		Set("line2 = ?", params.Line2).
+		Set("city = ?", params.City).
+		Set("state = ?", params.State).
+		Set("postal_code = ?", params.PostalCode).
+		Set("country_code = ?", params.CountryCode).
+		Set("updated_at = now()").
+		Where("user_profile_id = ?", userProfileID).
+		Exec(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
 func (r *repository) List(ctx context.Context, params ListParams) (*ListResult, error) {
 	users := make([]database.User, 0)
 
@@ -134,6 +212,30 @@ func (r *repository) List(ctx context.Context, params ListParams) (*ListResult, 
 		Users: users,
 		Total: int64(total),
 	}, nil
+}
+
+func (r *repository) DeleteAddressByProfileID(ctx context.Context, userProfileID string) error {
+	_, err := r.db.IDB(ctx).NewDelete().
+		Model((*database.UserAddress)(nil)).
+		Where("user_profile_id = ?", userProfileID).
+		Exec(ctx)
+	return err
+}
+
+func (r *repository) DeleteAddressByUserID(ctx context.Context, userID string) error {
+	_, err := r.db.IDB(ctx).NewDelete().
+		Model((*database.UserAddress)(nil)).
+		Where("user_profile_id IN (SELECT id FROM user_profiles WHERE user_id = ?)", userID).
+		Exec(ctx)
+	return err
+}
+
+func (r *repository) DeleteProfileByUserID(ctx context.Context, userID string) error {
+	_, err := r.db.IDB(ctx).NewDelete().
+		Model((*database.UserProfile)(nil)).
+		Where("user_id = ?", userID).
+		Exec(ctx)
+	return err
 }
 
 func (r *repository) DeleteUser(ctx context.Context, userID string) (int64, error) {

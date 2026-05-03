@@ -13,6 +13,7 @@ import (
 
 type stubUserRepository struct {
 	createUserFunc func(ctx context.Context, params CreateParams) (*database.User, error)
+	updateUserFunc func(ctx context.Context, params UpdateParams) (int64, error)
 	deleteUserFunc func(ctx context.Context, userID string) (int64, error)
 }
 
@@ -43,8 +44,47 @@ func (r stubUserRepository) CreateAddress(
 	return &database.UserAddress{}, nil
 }
 
+func (r stubUserRepository) GetProfileIDByUserID(context.Context, string) (string, error) {
+	return "", nil
+}
+
+func (r stubUserRepository) UpdateUser(ctx context.Context, params UpdateParams) (int64, error) {
+	if r.updateUserFunc == nil {
+		return 0, nil
+	}
+	return r.updateUserFunc(ctx, params)
+}
+
+func (r stubUserRepository) UpdateProfileByUserID(
+	context.Context,
+	string,
+	CreateProfileParams,
+) (int64, error) {
+	return 0, nil
+}
+
+func (r stubUserRepository) UpdateAddressByProfileID(
+	context.Context,
+	string,
+	CreateAddressParams,
+) (int64, error) {
+	return 0, nil
+}
+
 func (r stubUserRepository) List(context.Context, ListParams) (*ListResult, error) {
 	return nil, nil
+}
+
+func (r stubUserRepository) DeleteAddressByProfileID(context.Context, string) error {
+	return nil
+}
+
+func (r stubUserRepository) DeleteAddressByUserID(context.Context, string) error {
+	return nil
+}
+
+func (r stubUserRepository) DeleteProfileByUserID(context.Context, string) error {
+	return nil
 }
 
 func (r stubUserRepository) DeleteUser(ctx context.Context, userID string) (int64, error) {
@@ -111,6 +151,64 @@ func TestServiceCreatePassesThroughAppError(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, want)
+}
+
+func TestServiceUpdate(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc: func(_ context.Context, params UpdateParams) (int64, error) {
+			assert.Equal(t, "0198f8f0-0000-7000-8000-000000000999", params.ID)
+			assert.Equal(t, "kit@example.com", params.Email)
+			return 1, nil
+		},
+	}, stubTransactionProvider{})
+
+	affectedRows, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), affectedRows)
+}
+
+func TestServiceUpdateValidatesRequest(t *testing.T) {
+	called := false
+	service := NewService(stubUserRepository{
+		updateUserFunc: func(context.Context, UpdateParams) (int64, error) {
+			called = true
+			return 0, nil
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{})
+
+	require.Error(t, err)
+	appErr, ok := err.(*apperror.Error)
+	require.True(t, ok)
+	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
+	assert.False(t, called)
+}
+
+func TestServiceUpdateReturnsNotFound(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc: func(context.Context, UpdateParams) (int64, error) {
+			return 0, nil
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+	})
+
+	require.Error(t, err)
+	appErr, ok := err.(*apperror.Error)
+	require.True(t, ok)
+	assert.Equal(t, apperror.CodeNotFound, appErr.Code())
 }
 
 func TestServiceDelete(t *testing.T) {

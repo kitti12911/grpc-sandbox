@@ -79,6 +79,21 @@ func createParamsFromProto(user *userv1.User) CreateParams {
 	}
 }
 
+func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
+	if user == nil {
+		return UpdateParams{ID: id}
+	}
+
+	return UpdateParams{
+		ID:          id,
+		Email:       user.GetEmail(),
+		Username:    user.GetUsername(),
+		DisplayName: user.DisplayName,
+		Status:      userStatusFromProto(user.GetStatus()),
+		Profile:     createProfileParamsFromProto(user.GetProfile()),
+	}
+}
+
 func createProfileParamsFromProto(profile *userv1.UserProfile) *CreateProfileParams {
 	if profile == nil {
 		return nil

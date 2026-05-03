@@ -14,6 +14,7 @@ import (
 type userService interface {
 	GetByID(ctx context.Context, params GetByIDParams) (*database.User, error)
 	Create(ctx context.Context, params CreateParams) (string, error)
+	Update(ctx context.Context, params UpdateParams) (int64, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
 	Delete(ctx context.Context, params DeleteParams) (int64, error)
 }
@@ -79,6 +80,15 @@ func (h *Handler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest)
 	}
 
 	return &userv1.CreateUserResponse{Id: id}, nil
+}
+
+func (h *Handler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
+	affectedRows, err := h.userService.Update(ctx, updateParamsFromProto(req.GetId(), req.GetUser()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &userv1.UpdateUserResponse{AffectedRows: affectedRows}, nil
 }
 
 func (h *Handler) DeleteUser(ctx context.Context, req *userv1.DeleteUserRequest) (*userv1.DeleteUserResponse, error) {
