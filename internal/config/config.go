@@ -6,7 +6,7 @@ import (
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
 	liborm "github.com/kitti12911/lib-orm"
-	"github.com/kitti12911/lib-util/v2/logger"
+	"github.com/kitti12911/lib-util/v3/logger"
 )
 
 type Config struct {

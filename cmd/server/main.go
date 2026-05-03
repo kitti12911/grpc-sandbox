@@ -14,8 +14,8 @@ import (
 
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
-	libconfig "github.com/kitti12911/lib-util/v2/config"
-	"github.com/kitti12911/lib-util/v2/logger"
+	libconfig "github.com/kitti12911/lib-util/v3/config"
+	"github.com/kitti12911/lib-util/v3/logger"
 
 	"github.com/dromara/carbon/v2"
 )

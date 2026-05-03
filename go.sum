@@ -1,3 +1,5 @@
+github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7OputlJIzU=
+github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
 github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1xcsSM=
 github.com/cenkalti/backoff/v5 v5.0.3/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
@@ -43,12 +45,12 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 h1:HWRh5R2+9EifMyIHV7ZV+MIZqgz
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0/go.mod h1:JfhWUomR1baixubs02l85lZYYOm7LV6om4ceouMv45c=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
-github.com/kitti12911/lib-monitor v1.3.0 h1:ZV6UVWK650cZE8Muja5BVLFqvZm28lx++rpO5zm8bzY=
-github.com/kitti12911/lib-monitor v1.3.0/go.mod h1:6bTtoaxKEVtofXdWhnqCog69eaQgRoqMgzsEe9AJ0wI=
-github.com/kitti12911/lib-orm v1.1.0 h1:X+KTRquW9Q7XdT+yK7t2P7Wnuoiqs8gYW8vu+BdOBZQ=
-github.com/kitti12911/lib-orm v1.1.0/go.mod h1:IfBWl9biwlglIYzwUHmF32riqsBlzDFaPqc0AIPyBGQ=
-github.com/kitti12911/lib-util/v2 v2.2.0 h1:ChcNmHV+IDgj57Fdr14gSeIaYCXkT0UVCiH/+wnqWio=
-github.com/kitti12911/lib-util/v2 v2.2.0/go.mod h1:22EE0VnOfa00VfOve5BMtXlbzErtBdG3pgK1DGBIF6k=
+github.com/kitti12911/lib-monitor v1.5.0 h1:NdaMZ/CLAh5IAnEHXNaeL3PgkW8mKRnhBXj5gSWYKTo=
+github.com/kitti12911/lib-monitor v1.5.0/go.mod h1:4tAqwTNoy5bp5sfs8xilhI4kBnzVN8sgbinfT4LH3Fg=
+github.com/kitti12911/lib-orm v1.4.1 h1:Yt06CuIBLLL4es26AKOiAPZwgotMN3z8xvlRZi5Zedk=
+github.com/kitti12911/lib-orm v1.4.1/go.mod h1:/I6eWJFCCHVAQ0R56QsYfICjwdlRnlsBOUGB+gxxKOk=
+github.com/kitti12911/lib-util/v3 v3.0.1 h1:lC7rU5RVlFHDqffEz7UUR/lf0VT+B+CeMB2Q/iB5Pls=
+github.com/kitti12911/lib-util/v3 v3.0.1/go.mod h1:NcXdlF7LrO4v3+DoWINTnwjZ2KxrGmH7uXnouArQjHc=
 github.com/klauspost/compress v1.17.8 h1:YcnTYrq7MikUT7k0Yb5eceMmALQPYBW/Xltxn0NAMnU=
 github.com/klauspost/compress v1.17.8/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
@@ -109,6 +111,8 @@ go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0 h1:88Y4s2C8oTui1LGM6bT
 go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0/go.mod h1:Vl1/iaggsuRlrHf/hfPJPvVag77kKyvrLeD10kpMl+A=
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.43.0 h1:RAE+JPfvEmvy+0LzyUA25/SGawPwIUbZ6u0Wug54sLc=
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.43.0/go.mod h1:AGmbycVGEsRx9mXMZ75CsOyhSP6MFIcj/6dnG+vhVjk=
+go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0 h1:3iZJKlCZufyRzPzlQhUIWVmfltrXuGyfjREgGP3UUjc=
+go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0/go.mod h1:/G+nUPfhq2e+qiXMGxMwumDrP5jtzU+mWN7/sjT2rak=
 go.opentelemetry.io/otel/metric v1.43.0 h1:d7638QeInOnuwOONPp4JAOGfbCEpYb+K6DVWvdxGzgM=
 go.opentelemetry.io/otel/metric v1.43.0/go.mod h1:RDnPtIxvqlgO8GRW18W6Z/4P462ldprJtfxHxyKd2PY=
 go.opentelemetry.io/otel/sdk v1.43.0 h1:pi5mE86i5rTeLXqoF/hhiBtUNcrAGHLKQdhg4h4V9Dg=

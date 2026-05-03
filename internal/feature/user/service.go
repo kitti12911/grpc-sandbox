@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"grpc-sandbox/internal/apperror"
@@ -12,6 +13,7 @@ import (
 
 type userRepository interface {
 	GetByID(ctx context.Context, id string) (*database.User, error)
+	List(ctx context.Context, params ListParams) (*ListResult, error)
 }
 
 type Service struct {
@@ -44,4 +46,18 @@ func (s *Service) GetByID(ctx context.Context, params GetByIDParams) (*database.
 	}
 
 	return user, nil
+}
+
+func (s *Service) List(ctx context.Context, params ListParams) (*ListResult, error) {
+	result, err := s.userRepository.List(ctx, params)
+	if err != nil {
+		if err, ok := errors.AsType[*apperror.Error](err); ok {
+			return nil, err
+		}
+
+		slog.ErrorContext(ctx, "failed to list users", "error", err)
+		return nil, apperror.Internal("failed to list users", err)
+	}
+
+	return result, nil
 }

@@ -3,12 +3,17 @@ package user
 import (
 	"context"
 
+	commonv1 "grpc-sandbox/gen/grpc/common/v1"
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
 	"grpc-sandbox/internal/database"
+
+	orm "github.com/kitti12911/lib-orm"
+	"github.com/kitti12911/lib-util/v3/pagination"
 )
 
 type userService interface {
 	GetByID(ctx context.Context, params GetByIDParams) (*database.User, error)
+	List(ctx context.Context, params ListParams) (*ListResult, error)
 }
 
 type Handler struct {
@@ -30,5 +35,37 @@ func (h *Handler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*use
 
 	return &userv1.GetUserResponse{
 		User: toProtoUser(result),
+	}, nil
+}
+
+func (h *Handler) ListUsers(ctx context.Context, req *userv1.ListUsersRequest) (*userv1.ListUsersResponse, error) {
+	pag := req.GetPagination()
+	page := pagination.ParseInput(pag.GetPage(), pag.GetPageSize())
+
+	result, err := h.userService.List(ctx, ListParams{
+		Limit:   page.Limit,
+		Offset:  page.Offset,
+		Filters: orm.FiltersFromProto(req.GetFilters()),
+		OrderBy: orm.OrderByFromProto(req.GetOrderBy()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]*userv1.User, len(result.Users))
+	for i := range result.Users {
+		users[i] = toProtoUser(&result.Users[i])
+	}
+
+	pageOut := pagination.CalcOutput(pag.GetPage(), pag.GetPageSize(), result.Total)
+
+	return &userv1.ListUsersResponse{
+		Users: users,
+		Pagination: &commonv1.PaginationResponse{
+			Page:       pageOut.Page,
+			PageSize:   pageOut.PageSize,
+			TotalPages: pageOut.TotalPages,
+			TotalSize:  pageOut.TotalSize,
+		},
 	}, nil
 }

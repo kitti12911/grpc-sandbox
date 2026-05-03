@@ -33,3 +33,33 @@ func (r *repository) GetByID(ctx context.Context, id string) (*database.User, er
 	}
 	return user, nil
 }
+
+func (r *repository) List(ctx context.Context, params ListParams) (*ListResult, error) {
+	users := make([]database.User, 0)
+
+	query := r.db.NewSelect().
+		Model(&users).
+		Relation("Profile").
+		Relation("Profile.Address")
+
+	if err := applyFilters(query, params.Filters); err != nil {
+		return nil, err
+	}
+
+	if err := applyOrderBy(query, params.OrderBy); err != nil {
+		return nil, err
+	}
+
+	total, err := query.
+		Limit(params.Limit).
+		Offset(params.Offset).
+		ScanAndCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListResult{
+		Users: users,
+		Total: int64(total),
+	}, nil
+}
