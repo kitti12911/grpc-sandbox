@@ -1,38 +1,38 @@
 - model: User
   rows:
-    - _id: active
-      id: 0198f8f0-0000-7000-8000-000000000001
-      email: active.user@example.com
-      username: active_user
-      display_name: Active User
-      status: active
-    - _id: pending
-      id: 0198f8f0-0000-7000-8000-000000000002
-      email: pending.user@example.com
-      username: pending_user
-      display_name: Pending User
-      status: pending
+      - _id: active
+        id: 0198f8f0-0000-7000-8000-000000000001
+        email: active.user@example.com
+        username: active_user
+        display_name: Active User
+        status: active
+      - _id: pending
+        id: 0198f8f0-0000-7000-8000-000000000002
+        email: pending.user@example.com
+        username: pending_user
+        display_name: Pending User
+        status: pending
 - model: UserProfile
   rows:
-    - _id: active
-      id: 0198f8f0-0000-7000-8000-000000000101
-      user_id: 0198f8f0-0000-7000-8000-000000000001
-      first_name: Active
-      last_name: User
-      phone_number: "+66123456789"
-    - _id: pending
-      id: 0198f8f0-0000-7000-8000-000000000102
-      user_id: 0198f8f0-0000-7000-8000-000000000002
-      first_name: Pending
-      last_name: User
+      - _id: active
+        id: 0198f8f0-0000-7000-8000-000000000101
+        user_id: 0198f8f0-0000-7000-8000-000000000001
+        first_name: Active
+        last_name: User
+        phone_number: "+66123456789"
+      - _id: pending
+        id: 0198f8f0-0000-7000-8000-000000000102
+        user_id: 0198f8f0-0000-7000-8000-000000000002
+        first_name: Pending
+        last_name: User
 - model: UserAddress
   rows:
-    - _id: active
-      id: 0198f8f0-0000-7000-8000-000000000201
-      user_profile_id: 0198f8f0-0000-7000-8000-000000000101
-      line1: 123 Demo Road
-      line2: Unit 7
-      city: Bangkok
-      state: Bangkok
-      postal_code: "10110"
-      country_code: TH
+      - _id: active
+        id: 0198f8f0-0000-7000-8000-000000000201
+        user_profile_id: 0198f8f0-0000-7000-8000-000000000101
+        line1: 123 Demo Road
+        line2: Unit 7
+        city: Bangkok
+        state: Bangkok
+        postal_code: "10110"
+        country_code: TH

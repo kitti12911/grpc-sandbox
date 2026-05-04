@@ -11,6 +11,11 @@ run:
 fmt:
 	go fmt ./...
 
+pretty:
+	prettier --write "**/*.{md,markdown,yml,yaml,json,jsonc}"
+
+format: fmt pretty
+
 test:
 	env CGO_ENABLED=1 go test --race -v ./...
 

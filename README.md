@@ -23,6 +23,10 @@ helpers from [`lib-util`](https://github.com/kitti12911/lib-util),
 - [buf](https://buf.build/) for protobuf generation
 - PostgreSQL for local runtime
 
+Optional:
+
+- [prettier](https://prettier.io/) for Markdown, YAML, JSON, and JSONC formatting
+
 ## project structure
 
 ```bash
@@ -138,6 +142,8 @@ each table is patched separately.
 ```bash
 make tidy
 make fmt
+make pretty
+make format
 make test
 make cov
 make gen
