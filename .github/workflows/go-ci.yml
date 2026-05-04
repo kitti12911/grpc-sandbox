@@ -159,12 +159,20 @@ jobs:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
+            # docker/setup-buildx-action v3.11.1
+            - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+            # docker/build-push-action v6.18.0
             - name: Build Docker image
-              run: |
-                  docker build \
-                      -t "${IMAGE_REF}:${GITHUB_SHA}" \
-                      -t "${IMAGE_REF}:latest" \
-                      .
+              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+              with:
+                  context: .
+                  load: true
+                  tags: |
+                      ${{ env.IMAGE_REF }}:${{ github.sha }}
+                      ${{ env.IMAGE_REF }}:latest
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
 
             # aquasecurity/trivy-action v0.36.0
             - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
@@ -174,6 +182,15 @@ jobs:
                   exit-code: 1
                   severity: CRITICAL,HIGH
                   ignore-unfixed: true
+
+            - name: Check Zot auth
+              env:
+                  ZOT_USERNAME: ${{ secrets.ZOT_USERNAME }}
+                  ZOT_TOKEN: ${{ secrets.ZOT_TOKEN }}
+              run: |
+                  curl -i \
+                      -u "${ZOT_USERNAME}:${ZOT_TOKEN}" \
+                      "https://${REGISTRY}/v2/"
 
             - name: Login to Zot registry
               env:
