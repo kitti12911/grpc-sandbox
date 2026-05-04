@@ -178,7 +178,7 @@ jobs:
             # aquasecurity/trivy-action v0.36.0
             - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
               with:
-                  image-ref: zot.kittiaccess.work/${{ github.repository }}:${{ github.sha }}
+                  image-ref: ${{ env.IMAGE_REF }}:${{ github.sha }}
                   format: table
                   exit-code: 1
                   severity: CRITICAL,HIGH
@@ -200,7 +200,6 @@ jobs:
                       ${{ env.IMAGE_REF }}:${{ github.sha }}
                       ${{ env.IMAGE_REF }}:latest
                   cache-from: type=gha
-                  cache-to: type=gha,mode=max
                   outputs: type=image,push=true,oci-mediatypes=false
                   provenance: false
                   sbom: false
