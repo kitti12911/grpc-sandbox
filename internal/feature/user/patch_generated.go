@@ -6,16 +6,17 @@ import fieldmap "grpc-sandbox/gen/database"
 
 func patchFields(params PatchParams) patchData {
 	data := patchData{
-		userFields:    make(map[string]any),
-		profileFields: make(map[string]any),
 		addressFields: make(map[string]any),
+		profileFields: make(map[string]any),
+		userFields:    make(map[string]any),
 	}
 
 	if params.User.Profile != nil {
 		data.profile = *params.User.Profile
-		if params.User.Profile.Address != nil {
-			data.address = *params.User.Profile.Address
-		}
+	}
+
+	if params.User.Profile != nil && params.User.Profile.Address != nil {
+		data.address = *params.User.Profile.Address
 	}
 
 	for _, path := range params.Fields {

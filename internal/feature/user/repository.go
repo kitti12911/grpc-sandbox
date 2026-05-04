@@ -4,21 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/apperror"
 	"grpc-sandbox/internal/database"
 
 	orm "github.com/kitti12911/lib-orm/v2"
-	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 var (
-	userPatchColumns    = writablePatchColumns(fieldmap.UserRootFields, "id", "created_at", "updated_at", "deleted_at")
-	profilePatchColumns = writablePatchColumns(fieldmap.UserProfileFields, "id", "user_id", "created_at", "updated_at")
-	addressPatchColumns = writablePatchColumns(fieldmap.UserAddressFields, "id", "user_profile_id", "created_at", "updated_at")
+	userPatchColumns    = orm.WritableColumns(fieldmap.UserRootFields, "id", "created_at", "updated_at", "deleted_at")
+	profilePatchColumns = orm.WritableColumns(fieldmap.UserProfileFields, "id", "user_id", "created_at", "updated_at")
+	addressPatchColumns = orm.WritableColumns(fieldmap.UserAddressFields, "id", "user_profile_id", "created_at", "updated_at")
 )
 
 type repository struct {
@@ -156,7 +154,7 @@ func (r *repository) PatchUser(ctx context.Context, userID string, fields map[st
 		Set("updated_at = now()").
 		Where("id = ?", userID)
 
-	if err := applyPatchFields(query, fields, userPatchColumns); err != nil {
+	if err := orm.ApplyPatchFields(query, fields, userPatchColumns); err != nil {
 		return 0, err
 	}
 
@@ -201,7 +199,7 @@ func (r *repository) PatchProfileByUserID(
 		Set("updated_at = now()").
 		Where("user_id = ?", userID)
 
-	if err := applyPatchFields(query, fields, profilePatchColumns); err != nil {
+	if err := orm.ApplyPatchFields(query, fields, profilePatchColumns); err != nil {
 		return 0, err
 	}
 
@@ -246,7 +244,7 @@ func (r *repository) PatchAddressByProfileID(
 		Set("updated_at = now()").
 		Where("user_profile_id = ?", userProfileID)
 
-	if err := applyPatchFields(query, fields, addressPatchColumns); err != nil {
+	if err := orm.ApplyPatchFields(query, fields, addressPatchColumns); err != nil {
 		return 0, err
 	}
 
@@ -327,31 +325,4 @@ func (r *repository) DeleteUser(ctx context.Context, userID string) (int64, erro
 func isUniqueViolation(err error) bool {
 	var pgErr pgdriver.Error
 	return errors.As(err, &pgErr) && pgErr.Field('C') == "23505"
-}
-
-func writablePatchColumns(fields map[string]string, blocked ...string) map[string]string {
-	blockedSet := make(map[string]bool, len(blocked))
-	for _, field := range blocked {
-		blockedSet[field] = true
-	}
-
-	columns := make(map[string]string, len(fields)-len(blockedSet))
-	for field, column := range fields {
-		if blockedSet[field] {
-			continue
-		}
-		columns[field] = column
-	}
-	return columns
-}
-
-func applyPatchFields(query *bun.UpdateQuery, fields map[string]any, columns map[string]string) error {
-	for field, value := range fields {
-		column, ok := columns[field]
-		if !ok {
-			return fmt.Errorf("invalid patch field %q", field)
-		}
-		query.Set("? = ?", bun.Ident(column), value)
-	}
-	return nil
 }

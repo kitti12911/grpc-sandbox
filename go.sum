@@ -47,8 +47,8 @@ github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/kitti12911/lib-monitor v1.5.0 h1:NdaMZ/CLAh5IAnEHXNaeL3PgkW8mKRnhBXj5gSWYKTo=
 github.com/kitti12911/lib-monitor v1.5.0/go.mod h1:4tAqwTNoy5bp5sfs8xilhI4kBnzVN8sgbinfT4LH3Fg=
-github.com/kitti12911/lib-orm/v2 v2.0.0 h1:vq6Qi7HOU1mwgA1LNlV/kSw4ZuqtoS6M6oZ8oTPKAhs=
-github.com/kitti12911/lib-orm/v2 v2.0.0/go.mod h1:sNuUNb+PZZmhF3LccXcvRbsLhuHmXhY53tCLYk2U/30=
+github.com/kitti12911/lib-orm/v2 v2.2.0 h1:O4hGIvNyVj76tPkxaltiUFOeqi22QOrYsBGW94k2LME=
+github.com/kitti12911/lib-orm/v2 v2.2.0/go.mod h1:sNuUNb+PZZmhF3LccXcvRbsLhuHmXhY53tCLYk2U/30=
 github.com/kitti12911/lib-util/v3 v3.0.1 h1:lC7rU5RVlFHDqffEz7UUR/lf0VT+B+CeMB2Q/iB5Pls=
 github.com/kitti12911/lib-util/v3 v3.0.1/go.mod h1:NcXdlF7LrO4v3+DoWINTnwjZ2KxrGmH7uXnouArQjHc=
 github.com/klauspost/compress v1.17.8 h1:YcnTYrq7MikUT7k0Yb5eceMmALQPYBW/Xltxn0NAMnU=
