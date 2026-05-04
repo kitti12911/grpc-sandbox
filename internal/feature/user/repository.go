@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/kitti12911/lib-util/v3/apperror"
+
 	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/database"
 

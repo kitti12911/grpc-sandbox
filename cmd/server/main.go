@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"grpc-sandbox/internal/config"
-	"grpc-sandbox/internal/database"
-	"grpc-sandbox/internal/feature/user"
-	"grpc-sandbox/internal/server"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"grpc-sandbox/internal/config"
+	"grpc-sandbox/internal/database"
+	"grpc-sandbox/internal/feature/user"
+	"grpc-sandbox/internal/server"
 
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
@@ -21,6 +22,10 @@ import (
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	ctx := context.Background()
 
 	// Set default time
@@ -36,7 +41,7 @@ func main() {
 
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to load config", "error", err)
-		os.Exit(1)
+		return 1
 	}
 
 	if cfg.Service.ShutdownTimeout == 0 {
@@ -50,11 +55,11 @@ func main() {
 	profiler, err := profiling.NewFromConfig(cfg.Service.Name, cfg.Profiling)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to init profiling", "error", err)
-		os.Exit(1)
+		return 1
 	}
 	defer func() {
-		if err := profiling.Shutdown(profiler); err != nil {
-			slog.ErrorContext(ctx, "failed to stop profiling", "error", err)
+		if shutdownErr := profiling.Shutdown(profiler); shutdownErr != nil {
+			slog.ErrorContext(ctx, "failed to stop profiling", "error", shutdownErr)
 		}
 	}()
 
@@ -62,19 +67,23 @@ func main() {
 	tp, err := tracing.NewFromConfig(ctx, cfg.Service.Name, cfg.Tracing)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to init tracing", "error", err)
-		os.Exit(1)
+		return 1
 	}
-	defer tracing.Shutdown(ctx, tp)
+	defer func() {
+		if shutdownErr := tracing.Shutdown(ctx, tp); shutdownErr != nil {
+			slog.ErrorContext(ctx, "failed to stop tracing", "error", shutdownErr)
+		}
+	}()
 
 	// Init database
 	db, err := database.New(ctx, cfg)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to init database", "error", err)
-		os.Exit(1)
+		return 1
 	}
 	defer func() {
-		if err := db.Close(); err != nil {
-			slog.ErrorContext(ctx, "failed to close database", "error", err)
+		if closeErr := db.Close(); closeErr != nil {
+			slog.ErrorContext(ctx, "failed to close database", "error", closeErr)
 		}
 	}()
 
@@ -84,17 +93,15 @@ func main() {
 	userHandler := user.NewHandler(userService)
 
 	// Start gRPC server
-	srv, err := server.NewGRPCServer(cfg.Service.Port, userHandler)
+	srv, err := server.NewGRPCServer(ctx, cfg.Service.Port, userHandler)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to create gRPC server", "error", err)
-		os.Exit(1)
+		return 1
 	}
 
+	serverErr := make(chan error, 1)
 	go func() {
-		if err := srv.Start(); err != nil {
-			slog.ErrorContext(ctx, "gRPC server error", "error", err)
-			os.Exit(1)
-		}
+		serverErr <- srv.Start()
 	}()
 
 	slog.InfoContext(ctx, "gRPC server started", "port", cfg.Service.Port)
@@ -102,7 +109,12 @@ func main() {
 	// Wait for shutdown signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	select {
+	case <-quit:
+	case err := <-serverErr:
+		slog.ErrorContext(ctx, "gRPC server error", "error", err)
+		return 1
+	}
 
 	slog.InfoContext(ctx, "shutting down gRPC server")
 
@@ -112,4 +124,6 @@ func main() {
 	srv.Stop(shutdownCtx)
 
 	slog.InfoContext(ctx, "server stopped")
+
+	return 0
 }

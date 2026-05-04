@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/kitti12911/lib-util/v3/apperror"
+
 	"grpc-sandbox/internal/database"
 
 	"github.com/stretchr/testify/assert"
@@ -148,6 +150,15 @@ func ptr[T any](value T) *T {
 	return &value
 }
 
+func requireAppError(t *testing.T, err error) *apperror.Error {
+	t.Helper()
+
+	var appErr *apperror.Error
+	require.True(t, errors.As(err, &appErr))
+
+	return appErr
+}
+
 func TestServiceCreate(t *testing.T) {
 	service := NewService(stubUserRepository{
 		createUserFunc: func(_ context.Context, params CreateParams) (*database.User, error) {
@@ -178,8 +189,7 @@ func TestServiceCreateValidatesRequest(t *testing.T) {
 	_, err := service.Create(context.Background(), CreateParams{})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
 	assert.False(t, called)
 }
@@ -233,8 +243,7 @@ func TestServiceUpdateValidatesRequest(t *testing.T) {
 	_, err := service.Update(context.Background(), UpdateParams{})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
 	assert.False(t, called)
 }
@@ -254,8 +263,7 @@ func TestServiceUpdateReturnsNotFound(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeNotFound, appErr.Code())
 }
 
@@ -335,8 +343,7 @@ func TestServicePatchValidatesRequest(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
 	assert.False(t, called)
 }
@@ -355,8 +362,7 @@ func TestServicePatchReturnsNotFound(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeNotFound, appErr.Code())
 }
 
@@ -388,8 +394,7 @@ func TestServiceDeleteValidatesRequest(t *testing.T) {
 	_, err := service.Delete(context.Background(), DeleteParams{})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeInvalidInput, appErr.Code())
 	assert.False(t, called)
 }
@@ -406,7 +411,6 @@ func TestServiceDeleteReturnsNotFound(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	appErr, ok := err.(*apperror.Error)
-	require.True(t, ok)
+	appErr := requireAppError(t, err)
 	assert.Equal(t, apperror.CodeNotFound, appErr.Code())
 }

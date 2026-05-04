@@ -26,8 +26,9 @@ type GRPCServer struct {
 	health   *health.Server
 }
 
-func NewGRPCServer(port int, userHandler *user.Handler) (*GRPCServer, error) {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+func NewGRPCServer(ctx context.Context, port int, userHandler *user.Handler) (*GRPCServer, error) {
+	listenConfig := net.ListenConfig{}
+	listener, err := listenConfig.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen on port %d: %w", port, err)
 	}

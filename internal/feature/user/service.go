@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/kitti12911/lib-util/v3/apperror"
+
 	"grpc-sandbox/internal/database"
 
 	"github.com/kitti12911/lib-util/v3/validator"
@@ -240,8 +241,8 @@ func (s *Service) patchProfile(ctx context.Context, userID string, data patchDat
 		}
 		profileID = profile.ID
 	} else if len(data.profileFields) > 0 {
-		if _, err := s.userRepository.PatchProfileByUserID(ctx, userID, data.profileFields); err != nil {
-			return err
+		if _, patchErr := s.userRepository.PatchProfileByUserID(ctx, userID, data.profileFields); patchErr != nil {
+			return patchErr
 		}
 	}
 
