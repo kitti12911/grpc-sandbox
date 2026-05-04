@@ -81,6 +81,30 @@ The generated field maps and patch extractor come from
 [`github.com/kitti12911/lib-orm/v2`](https://github.com/kitti12911/lib-orm)
 generator commands.
 
+Generator notes:
+
+- `fieldmapgen` reads Bun models under `internal/database` and generates field
+  maps plus validator functions in `gen/database`.
+- `patchfieldgen` reads `internal/feature/user/user.go` and generates
+  `patchFields(params PatchParams)`.
+- `-root-selector params.User` means patch values are read from `params.User`.
+- `-paths-selector params.Fields` means field mask paths are read from
+  `params.Fields`.
+- `-bucket root:userFields:fieldmap.IsUserRootField` routes top-level paths
+  such as `email` into `data.userFields`.
+- `-bucket profile:profileFields:fieldmap.IsUserProfileField` routes paths
+  such as `profile.first_name` into `data.profileFields`.
+- `-bucket profile.address:addressFields:fieldmap.IsUserAddressField` routes
+  paths such as `profile.address.city` into `data.addressFields`.
+- `-copy params.User.Profile:data.profile` copies the full profile value when
+  present, so PATCH can create a missing profile row before updating it.
+- `-copy params.User.Profile.Address:data.address:params.User.Profile` copies
+  address with a profile nil guard, so generated code does not dereference a
+  nil profile.
+
+In short, buckets create SQL update maps, while copies carry nested create data
+for create-if-missing PATCH flows.
+
 ## run locally
 
 ```bash
