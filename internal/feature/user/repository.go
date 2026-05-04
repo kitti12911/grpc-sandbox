@@ -4,12 +4,21 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
+	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/apperror"
 	"grpc-sandbox/internal/database"
 
 	orm "github.com/kitti12911/lib-orm/v2"
+	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/driver/pgdriver"
+)
+
+var (
+	userPatchColumns    = writablePatchColumns(fieldmap.UserRootFields, "id", "created_at", "updated_at", "deleted_at")
+	profilePatchColumns = writablePatchColumns(fieldmap.UserProfileFields, "id", "user_id", "created_at", "updated_at")
+	addressPatchColumns = writablePatchColumns(fieldmap.UserAddressFields, "id", "user_profile_id", "created_at", "updated_at")
 )
 
 type repository struct {
@@ -141,6 +150,27 @@ func (r *repository) UpdateUser(ctx context.Context, params UpdateParams) (int64
 	return result.RowsAffected()
 }
 
+func (r *repository) PatchUser(ctx context.Context, userID string, fields map[string]any) (int64, error) {
+	query := r.db.IDB(ctx).NewUpdate().
+		Model((*database.User)(nil)).
+		Set("updated_at = now()").
+		Where("id = ?", userID)
+
+	if err := applyPatchFields(query, fields, userPatchColumns); err != nil {
+		return 0, err
+	}
+
+	result, err := query.Exec(ctx)
+	if err != nil {
+		if isUniqueViolation(err) {
+			return 0, apperror.AlreadyExist("user already exists", err)
+		}
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
 func (r *repository) UpdateProfileByUserID(
 	ctx context.Context,
 	userID string,
@@ -154,6 +184,28 @@ func (r *repository) UpdateProfileByUserID(
 		Set("updated_at = now()").
 		Where("user_id = ?", userID).
 		Exec(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (r *repository) PatchProfileByUserID(
+	ctx context.Context,
+	userID string,
+	fields map[string]any,
+) (int64, error) {
+	query := r.db.IDB(ctx).NewUpdate().
+		Model((*database.UserProfile)(nil)).
+		Set("updated_at = now()").
+		Where("user_id = ?", userID)
+
+	if err := applyPatchFields(query, fields, profilePatchColumns); err != nil {
+		return 0, err
+	}
+
+	result, err := query.Exec(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -177,6 +229,28 @@ func (r *repository) UpdateAddressByProfileID(
 		Set("updated_at = now()").
 		Where("user_profile_id = ?", userProfileID).
 		Exec(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (r *repository) PatchAddressByProfileID(
+	ctx context.Context,
+	userProfileID string,
+	fields map[string]any,
+) (int64, error) {
+	query := r.db.IDB(ctx).NewUpdate().
+		Model((*database.UserAddress)(nil)).
+		Set("updated_at = now()").
+		Where("user_profile_id = ?", userProfileID)
+
+	if err := applyPatchFields(query, fields, addressPatchColumns); err != nil {
+		return 0, err
+	}
+
+	result, err := query.Exec(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -253,4 +327,31 @@ func (r *repository) DeleteUser(ctx context.Context, userID string) (int64, erro
 func isUniqueViolation(err error) bool {
 	var pgErr pgdriver.Error
 	return errors.As(err, &pgErr) && pgErr.Field('C') == "23505"
+}
+
+func writablePatchColumns(fields map[string]string, blocked ...string) map[string]string {
+	blockedSet := make(map[string]bool, len(blocked))
+	for _, field := range blocked {
+		blockedSet[field] = true
+	}
+
+	columns := make(map[string]string, len(fields)-len(blockedSet))
+	for field, column := range fields {
+		if blockedSet[field] {
+			continue
+		}
+		columns[field] = column
+	}
+	return columns
+}
+
+func applyPatchFields(query *bun.UpdateQuery, fields map[string]any, columns map[string]string) error {
+	for field, value := range fields {
+		column, ok := columns[field]
+		if !ok {
+			return fmt.Errorf("invalid patch field %q", field)
+		}
+		query.Set("? = ?", bun.Ident(column), value)
+	}
+	return nil
 }

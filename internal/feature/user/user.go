@@ -15,27 +15,27 @@ type DeleteParams struct {
 }
 
 type CreateParams struct {
-	Email       string `validate:"required,email"`
-	Username    string `validate:"required"`
-	DisplayName *string
-	Status      string `validate:"required,oneof=active disabled pending"`
-	Profile     *CreateProfileParams
+	Email       string               `field:"email" validate:"required,email"`
+	Username    string               `field:"username" validate:"required"`
+	DisplayName *string              `field:"display_name"`
+	Status      string               `field:"status" validate:"required,oneof=active disabled pending"`
+	Profile     *CreateProfileParams `field:"profile"`
 }
 
 type CreateProfileParams struct {
-	FirstName   *string
-	LastName    *string
-	PhoneNumber *string
-	Address     *CreateAddressParams
+	FirstName   *string              `field:"first_name"`
+	LastName    *string              `field:"last_name"`
+	PhoneNumber *string              `field:"phone_number"`
+	Address     *CreateAddressParams `field:"address"`
 }
 
 type CreateAddressParams struct {
-	Line1       *string
-	Line2       *string
-	City        *string
-	State       *string
-	PostalCode  *string
-	CountryCode *string
+	Line1       *string `field:"line1"`
+	Line2       *string `field:"line2"`
+	City        *string `field:"city"`
+	State       *string `field:"state"`
+	PostalCode  *string `field:"postal_code"`
+	CountryCode *string `field:"country_code"`
 }
 
 type UpdateParams struct {
@@ -45,6 +45,12 @@ type UpdateParams struct {
 	DisplayName *string
 	Status      string `validate:"required,oneof=active disabled pending"`
 	Profile     *CreateProfileParams
+}
+
+type PatchParams struct {
+	ID     string       `validate:"required,uuid"`
+	User   CreateParams `validate:"-"`
+	Fields []string
 }
 
 type ListParams struct {

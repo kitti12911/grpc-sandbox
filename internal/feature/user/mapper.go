@@ -4,6 +4,7 @@ import (
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
 	"grpc-sandbox/internal/database"
 
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -91,6 +92,17 @@ func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
 		DisplayName: user.DisplayName,
 		Status:      userStatusFromProto(user.GetStatus()),
 		Profile:     createProfileParamsFromProto(user.GetProfile()),
+	}
+}
+
+func patchParamsFromProto(id string, user *userv1.User, mask *fieldmaskpb.FieldMask) PatchParams {
+	if mask == nil {
+		return PatchParams{ID: id, User: createParamsFromProto(user)}
+	}
+	return PatchParams{
+		ID:     id,
+		User:   createParamsFromProto(user),
+		Fields: mask.GetPaths(),
 	}
 }
 

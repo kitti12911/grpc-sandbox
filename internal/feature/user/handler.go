@@ -8,13 +8,21 @@ import (
 	"grpc-sandbox/internal/database"
 
 	orm "github.com/kitti12911/lib-orm/v2"
+	"github.com/kitti12911/lib-util/v3/fieldmask"
 	"github.com/kitti12911/lib-util/v3/pagination"
 )
+
+var immutableUserFields = map[string]bool{
+	"id":         true,
+	"created_at": true,
+	"updated_at": true,
+}
 
 type userService interface {
 	GetByID(ctx context.Context, params GetByIDParams) (*database.User, error)
 	Create(ctx context.Context, params CreateParams) (string, error)
 	Update(ctx context.Context, params UpdateParams) (int64, error)
+	Patch(ctx context.Context, params PatchParams) (int64, error)
 	List(ctx context.Context, params ListParams) (*ListResult, error)
 	Delete(ctx context.Context, params DeleteParams) (int64, error)
 }
@@ -89,6 +97,19 @@ func (h *Handler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest)
 	}
 
 	return &userv1.UpdateUserResponse{AffectedRows: affectedRows}, nil
+}
+
+func (h *Handler) PatchUser(ctx context.Context, req *userv1.PatchUserRequest) (*userv1.PatchUserResponse, error) {
+	if err := fieldmask.ValidateMask(req.GetUpdateMask(), req.GetUser(), immutableUserFields); err != nil {
+		return nil, err
+	}
+
+	affectedRows, err := h.userService.Patch(ctx, patchParamsFromProto(req.GetId(), req.GetUser(), req.GetUpdateMask()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &userv1.PatchUserResponse{AffectedRows: affectedRows}, nil
 }
 
 func (h *Handler) DeleteUser(ctx context.Context, req *userv1.DeleteUserRequest) (*userv1.DeleteUserResponse, error) {
