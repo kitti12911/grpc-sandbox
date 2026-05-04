@@ -1,8 +1,8 @@
 package user
 
 import (
+	"github.com/kitti12911/lib-util/v3/apperror"
 	fieldmap "grpc-sandbox/gen/database"
-	"grpc-sandbox/internal/apperror"
 
 	orm "github.com/kitti12911/lib-orm/v2"
 	"github.com/uptrace/bun"

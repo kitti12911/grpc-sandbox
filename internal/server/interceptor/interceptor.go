@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"grpc-sandbox/internal/apperror"
+	"github.com/kitti12911/lib-util/v3/apperror"
 
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"

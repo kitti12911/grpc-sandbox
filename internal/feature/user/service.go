@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"grpc-sandbox/internal/apperror"
+	"github.com/kitti12911/lib-util/v3/apperror"
 	"grpc-sandbox/internal/database"
 
 	"github.com/kitti12911/lib-util/v3/validator"

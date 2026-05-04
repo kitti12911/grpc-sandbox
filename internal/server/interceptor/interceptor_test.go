@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"grpc-sandbox/internal/apperror"
+	"github.com/kitti12911/lib-util/v3/apperror"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/kitti12911/lib-util/v3/apperror"
 	fieldmap "grpc-sandbox/gen/database"
-	"grpc-sandbox/internal/apperror"
 	"grpc-sandbox/internal/database"
 
 	orm "github.com/kitti12911/lib-orm/v2"

@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
 	github.com/kitti12911/lib-monitor v1.5.0
 	github.com/kitti12911/lib-orm/v2 v2.2.0
-	github.com/kitti12911/lib-util/v3 v3.0.1
+	github.com/kitti12911/lib-util/v3 v3.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
