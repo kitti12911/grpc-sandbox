@@ -258,12 +258,16 @@ jobs:
               id: image
               run: |
                   digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${GITHUB_SHA}" --format '{{.Manifest.Digest}}')"
+                  amd64_digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${GITHUB_SHA}-amd64" --format '{{.Manifest.Digest}}')"
+                  arm64_digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${GITHUB_SHA}-arm64" --format '{{.Manifest.Digest}}')"
                   echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+                  echo "amd64_digest=${amd64_digest}" >> "${GITHUB_OUTPUT}"
+                  echo "arm64_digest=${arm64_digest}" >> "${GITHUB_OUTPUT}"
 
             # sigstore/cosign-installer v4.1.1
             - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
 
-            - name: Sign Docker image
+            - name: Sign Docker images
               env:
                   COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
               run: |
@@ -277,3 +281,15 @@ jobs:
                       --use-signing-config=false \
                       --key "${key_file}" \
                       "${IMAGE_REF}@${{ steps.image.outputs.digest }}"
+
+                  cosign sign --yes \
+                      --new-bundle-format=false \
+                      --use-signing-config=false \
+                      --key "${key_file}" \
+                      "${IMAGE_REF}@${{ steps.image.outputs.amd64_digest }}"
+
+                  cosign sign --yes \
+                      --new-bundle-format=false \
+                      --use-signing-config=false \
+                      --key "${key_file}" \
+                      "${IMAGE_REF}@${{ steps.image.outputs.arm64_digest }}"
