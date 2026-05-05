@@ -4,7 +4,12 @@
     "timezone": "Asia/Bangkok",
     "schedule": ["* 0-4 1 * *"],
     "updateNotScheduled": false,
-    "enabledManagers": ["gomod", "github-actions", "dockerfile", "custom.regex"],
+    "enabledManagers": [
+        "gomod",
+        "github-actions",
+        "dockerfile",
+        "custom.regex"
+    ],
     "customManagers": [
         {
             "customType": "regex",
