@@ -77,6 +77,7 @@ make gen
 
 - protobuf generation from
   [`github.com/kitti12911/proto-sandbox`](https://github.com/kitti12911/proto-sandbox)
+  pinned in `buf.gen.yaml`
 - Bun field-map generation into `gen/database`
 - PATCH field-mask extraction generation into
   `internal/feature/user/patch_generated.go`
