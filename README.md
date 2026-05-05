@@ -77,6 +77,7 @@ make gen
 
 - protobuf generation from
   [`github.com/kitti12911/proto-sandbox`](https://github.com/kitti12911/proto-sandbox)
+  pinned in `buf.gen.yaml`
 - Bun field-map generation into `gen/database`
 - PATCH field-mask extraction generation into
   `internal/feature/user/patch_generated.go`
@@ -139,13 +140,17 @@ each table is patched separately.
 
 ## available commands
 
-```bash
-make tidy
-make fmt
-make pretty
-make format
-make test
-make cov
-make gen
-make run
-```
+| Command          | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| `make air`       | Run the service with Air live reload                  |
+| `make tidy`      | Run `go mod tidy`                                     |
+| `make run`       | Start the gRPC server locally                         |
+| `make fmt`       | Format Go code with `go fmt`                          |
+| `make pretty`    | Format Markdown, YAML, JSON, and JSONC                |
+| `make format`    | Run Go and document/config formatting                 |
+| `make test`      | Run tests with the race detector                      |
+| `make cov`       | Generate and open an HTML coverage report             |
+| `make fix`       | Apply standard Go source rewrites with `go fix`       |
+| `make gen`       | Generate protobuf clients, field maps, and PATCH code |
+| `make gen-go`    | Generate database field maps and PATCH helper code    |
+| `make gen-proto` | Generate protobuf clients from `proto-sandbox`        |
