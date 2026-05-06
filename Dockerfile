@@ -1,4 +1,4 @@
-FROM golang:1.26.2-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 AS builder
+FROM zot.kittiaccess.work/kitti12911/image-toolchain@sha256:ac879786afde1d764a964a3eca163cd7801134eebf656f627d8048c70933693f AS builder
 
 WORKDIR /src
 
@@ -7,21 +7,16 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
 	go mod download
 
-RUN apk add --no-cache git make
-
-RUN --mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	go install github.com/bufbuild/buf/cmd/buf@v1.69.0 \
-	&& go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11 \
-	&& go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.1
-
-COPY Makefile buf.gen.yaml ./
+COPY buf.gen.yaml ./
 COPY cmd ./cmd
 COPY internal ./internal
 
 RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
-	make gen
+	rm -rf gen/grpc gen/database \
+	&& buf generate \
+	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
+	&& patchfieldgen -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
 
 ARG TARGETOS
 ARG TARGETARCH
