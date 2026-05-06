@@ -1,3 +1,6 @@
+IMAGE_NAME ?= grpc-sandbox
+IMAGE_TAG ?= local
+
 # ____________________ Go Command ____________________
 air:
 	air
@@ -25,6 +28,10 @@ cov:
 
 fix: 
 	go fix ./...
+
+# ____________________ Docker Command ____________________
+docker-build:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 # ____________________ Generate Command ____________________
 gen: gen-proto gen-go
