@@ -65,7 +65,13 @@ jobs:
                   npx semantic-release --no-ci > "${RUNNER_TEMP}/semantic-release.log" 2>&1
                   cat "${RUNNER_TEMP}/semantic-release.log"
 
-                  version="$(sed -nE 's/.*The next release version is ([0-9A-Za-z.+-]+).*/\1/p' "${RUNNER_TEMP}/semantic-release.log" | tail -n 1)"
+                  version="$(sed -nE \
+                      -e 's/.*Published release ([0-9A-Za-z.+-]+).*/\1/p' \
+                      -e 's/.*The next release version is ([0-9A-Za-z.+-]+).*/\1/p' \
+                      "${RUNNER_TEMP}/semantic-release.log" | tail -n 1)"
+                  if [ -z "${version}" ]; then
+                      version="$(git tag --points-at HEAD --sort=-version:refname | sed -nE 's/^v([0-9A-Za-z.+-]+)$/\1/p' | head -n 1)"
+                  fi
                   if [ -z "${version}" ]; then
                       echo "No semantic release will be published."
                       exit 0
