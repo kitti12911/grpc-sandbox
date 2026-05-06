@@ -5,9 +5,9 @@ go 1.26.2
 require (
 	github.com/dromara/carbon/v2 v2.6.16
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
-	github.com/kitti12911/lib-monitor v1.6.0
-	github.com/kitti12911/lib-orm/v2 v2.4.0
-	github.com/kitti12911/lib-util/v3 v3.5.0
+	github.com/kitti12911/lib-monitor v1.8.0
+	github.com/kitti12911/lib-orm/v2 v2.5.0
+	github.com/kitti12911/lib-util/v3 v3.7.0
 	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
