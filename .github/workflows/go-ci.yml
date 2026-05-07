@@ -22,6 +22,7 @@ on:
             - "**/*.sql"
             - "**/*.yml"
             - "**/*.yaml"
+            - "!README.md"
     pull_request:
         paths:
             - ".releaserc.json"
@@ -38,6 +39,7 @@ on:
             - "**/*.sql"
             - "**/*.yml"
             - "**/*.yaml"
+            - "!README.md"
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
