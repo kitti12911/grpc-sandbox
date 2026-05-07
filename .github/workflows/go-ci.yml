@@ -325,3 +325,34 @@ jobs:
                           --repo "${REPOSITORY}" \
                           --comment "Closing duplicate promotion PR; #${existing_pr} now tracks \`${SOURCE_BRANCH}\` to \`${TARGET_BRANCH}\`."
                   done
+
+    sync-down:
+        name: Sync Main To Prerelease Branches
+        runs-on: ubuntu-latest
+        needs:
+            - release
+        if: |
+            github.event_name == 'push' &&
+            github.ref_name == 'main'
+        permissions:
+            contents: write
+        steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                  fetch-depth: 0
+
+            - name: Fast-forward prerelease branches
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+                  git fetch origin main uat develop
+
+                  git checkout -B uat origin/uat
+                  git merge --ff-only origin/main
+                  git push origin uat
+
+                  git checkout -B develop origin/develop
+                  git merge --ff-only uat
+                  git push origin develop
