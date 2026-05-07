@@ -335,17 +335,29 @@ jobs:
             github.event_name == 'push' &&
             github.ref_name == 'main'
         permissions:
-            contents: write
+            contents: read
         steps:
+            # actions/create-github-app-token v2.1.4
+            - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42
+              id: branch-sync-token
+              with:
+                  app-id: ${{ secrets.BRANCH_SYNC_APP_ID }}
+                  private-key: ${{ secrets.BRANCH_SYNC_APP_PRIVATE_KEY }}
+
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
+                  token: ${{ steps.branch-sync-token.outputs.token }}
 
             - name: Fast-forward prerelease branches
+              env:
+                  REPOSITORY: ${{ github.repository }}
+                  BRANCH_SYNC_TOKEN: ${{ steps.branch-sync-token.outputs.token }}
               run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git config user.name "homelab-branch-sync[bot]"
+                  git config user.email "homelab-branch-sync[bot]@users.noreply.github.com"
+                  git remote set-url origin "https://x-access-token:${BRANCH_SYNC_TOKEN}@github.com/${REPOSITORY}.git"
 
                   git fetch origin main uat develop
 
