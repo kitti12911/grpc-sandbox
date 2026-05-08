@@ -9,6 +9,17 @@ on:
             release_sha:
                 required: true
                 type: string
+        outputs:
+            published:
+                value: ${{ jobs.version.outputs.published }}
+            version:
+                value: ${{ jobs.version.outputs.version }}
+            git_tag:
+                value: ${{ jobs.version.outputs.git_tag }}
+            image_digest:
+                value: ${{ jobs.publish.outputs.image_digest }}
+            arm64_digest:
+                value: ${{ jobs.publish.outputs.arm64_digest }}
 
 concurrency:
     group: ${{ github.workflow }}-publish
@@ -164,6 +175,9 @@ jobs:
             - version
             - build
         if: needs.version.outputs.published == 'true'
+        outputs:
+            image_digest: ${{ steps.image.outputs.digest }}
+            arm64_digest: ${{ steps.image.outputs.arm64_digest }}
         env:
             IMAGE_REF: zot.kittiaccess.work/${{ github.repository }}
             RELEASE_TAG: ${{ needs.version.outputs.git_tag }}
