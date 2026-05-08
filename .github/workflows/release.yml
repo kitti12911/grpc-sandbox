@@ -131,19 +131,17 @@ jobs:
                   password: ${{ secrets.ZOT_TOKEN }}
 
             # docker/build-push-action v6.18.0
-            - name: Build Docker image for scan
+            - name: Build and push Docker image
               uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
               with:
                   context: .
-                  load: true
                   platforms: ${{ matrix.platform }}
                   tags: |
                       ${{ env.ARCH_IMAGE_REF }}
                       ${{ env.SHA_ARCH_IMAGE_REF }}
-                  cache-from: type=gha,scope=${{ matrix.arch }}
-                  cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
-                  provenance: false
-                  sbom: false
+                  outputs: type=image,push=true,oci-mediatypes=true
+                  provenance: true
+                  sbom: true
 
             # aquasecurity/trivy-action v0.36.0
             - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
@@ -153,20 +151,6 @@ jobs:
                   exit-code: 1
                   severity: CRITICAL,HIGH
                   ignore-unfixed: true
-
-            # docker/build-push-action v6.18.0
-            - name: Build and push Docker image
-              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
-              with:
-                  context: .
-                  platforms: ${{ matrix.platform }}
-                  tags: |
-                      ${{ env.ARCH_IMAGE_REF }}
-                      ${{ env.SHA_ARCH_IMAGE_REF }}
-                  cache-from: type=gha,scope=${{ matrix.arch }}
-                  outputs: type=image,push=true,oci-mediatypes=true
-                  provenance: true
-                  sbom: true
 
     publish:
         name: Publish Multi-Arch Image
