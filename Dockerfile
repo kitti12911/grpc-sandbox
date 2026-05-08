@@ -3,26 +3,20 @@ FROM zot.kittiaccess.work/kitti12911/image-toolchain@sha256:be20f86e4d9e918b3fd0
 WORKDIR /src
 
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	go mod download
+RUN go mod download
 
 COPY buf.gen.yaml ./
 COPY cmd ./cmd
 COPY internal ./internal
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	rm -rf gen/grpc gen/database \
+RUN rm -rf gen/grpc gen/database \
 	&& buf generate \
 	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
 	&& patchfieldgen -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
 
 ARG TARGETOS
 ARG TARGETARCH
-RUN --mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
 	go build -trimpath -ldflags="-s -w" -o /out/grpc-sandbox ./cmd/server
 
 FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601
