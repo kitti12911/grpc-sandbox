@@ -52,7 +52,7 @@ jobs:
         name: Generate
         runs-on: ubuntu-latest
         container:
-            image: zot.kittiaccess.work/kitti12911/image-toolchain@sha256:929af3066d2d112097ea45f424deefe84b2e5d122185d15de74cc6e8c6a6a4d2
+            image: zot.kittiaccess.work/kitti12911/image-toolchain@sha256:be20f86e4d9e918b3fd00a184668572c81307b279441858e93d48e81c2365762
             credentials:
                 username: ${{ secrets.ZOT_USERNAME }}
                 password: ${{ secrets.ZOT_TOKEN }}
@@ -168,7 +168,7 @@ jobs:
         needs:
             - generate
         container:
-            image: zot.kittiaccess.work/kitti12911/security-toolchain@sha256:b657fb66a9ab10d21e5180fb55bec65249706c703b6117001a2da04cc4f6844d
+            image: zot.kittiaccess.work/kitti12911/security-toolchain@sha256:7a30c1fc6740b99da063296ae0ef03cbeaec1d599dfea47a28ddeb51d9ed48e4
             credentials:
                 username: ${{ secrets.ZOT_USERNAME }}
                 password: ${{ secrets.ZOT_TOKEN }}
@@ -325,6 +325,48 @@ jobs:
                           --repo "${REPOSITORY}" \
                           --comment "Closing duplicate promotion PR; #${existing_pr} now tracks \`${SOURCE_BRANCH}\` to \`${TARGET_BRANCH}\`."
                   done
+
+    helm-image-update:
+        name: Update Helm Image Tag
+        runs-on: ubuntu-latest
+        needs:
+            - release
+        if: |
+            github.event_name == 'push' &&
+            needs.release.outputs.published == 'true'
+        steps:
+            - name: Print pending Helm image update
+              env:
+                  IMAGE_REF: zot.kittiaccess.work/${{ github.repository }}
+                  RELEASE_BRANCH: ${{ github.ref_name }}
+                  RELEASE_SHA: ${{ github.sha }}
+                  RELEASE_TAG: ${{ needs.release.outputs.git_tag }}
+                  IMAGE_DIGEST: ${{ needs.release.outputs.image_digest }}
+                  ARM64_DIGEST: ${{ needs.release.outputs.arm64_digest }}
+              run: |
+                  case "${RELEASE_BRANCH}" in
+                      develop)
+                          ENVIRONMENT="develop"
+                          ;;
+                      uat)
+                          ENVIRONMENT="uat"
+                          ;;
+                      main)
+                          ENVIRONMENT="production"
+                          ;;
+                      *)
+                          echo "No Helm image update target configured for ${RELEASE_BRANCH}."
+                          exit 0
+                          ;;
+                  esac
+
+                  echo "Helm image update is not implemented yet."
+                  echo "Would update ${ENVIRONMENT} values to:"
+                  echo "  image.repository=${IMAGE_REF}"
+                  echo "  image.tag=${RELEASE_TAG}"
+                  echo "  image.shaTag=${RELEASE_SHA}"
+                  echo "  image.digest=${IMAGE_DIGEST}"
+                  echo "  image.arm64Digest=${ARM64_DIGEST}"
 
     sync-down:
         name: Sync Main To Prerelease Branches
