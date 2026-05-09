@@ -38,7 +38,9 @@ func NewGRPCServer(ctx context.Context, port int, userHandler *user.Handler) (*G
 	})
 
 	srv := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.StatsHandler(otelgrpc.NewServerHandler(
+			otelgrpc.WithFilter(interceptor.TraceableRPC),
+		)),
 		grpc.ChainUnaryInterceptor(
 			interceptor.ErrorHandler(),
 			recovery.UnaryServerInterceptor(recoveryOpt),
