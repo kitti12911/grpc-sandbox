@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 
 	"github.com/kitti12911/lib-util/v3/apperror"
 
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 )
 
@@ -23,6 +25,18 @@ var codeMap = map[apperror.Code]codes.Code{
 	apperror.CodeForbidden:    codes.PermissionDenied,
 }
 
+func TraceableRPC(info *stats.RPCTagInfo) bool {
+	if info == nil {
+		return true
+	}
+
+	return !IsHealthCheck(info.FullMethodName)
+}
+
+func IsHealthCheck(fullMethod string) bool {
+	return strings.HasPrefix(fullMethod, "/grpc.health.v1.Health/")
+}
+
 func ErrorHandler() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -31,7 +45,7 @@ func ErrorHandler() grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (any, error) {
 		resp, err := handler(ctx, req)
-		if err == nil {
+		if err == nil || (info != nil && IsHealthCheck(info.FullMethod)) {
 			return resp, nil
 		}
 
