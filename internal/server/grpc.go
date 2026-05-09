@@ -7,6 +7,7 @@ import (
 	"net"
 
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
+	"grpc-sandbox/internal/feature/mockuser"
 	"grpc-sandbox/internal/feature/user"
 	"grpc-sandbox/internal/server/interceptor"
 
@@ -26,7 +27,12 @@ type GRPCServer struct {
 	health   *health.Server
 }
 
-func NewGRPCServer(ctx context.Context, port int, userHandler *user.Handler) (*GRPCServer, error) {
+func NewGRPCServer(
+	ctx context.Context,
+	port int,
+	userHandler *user.Handler,
+	mockUserHandler *mockuser.Handler,
+) (*GRPCServer, error) {
 	listenConfig := net.ListenConfig{}
 	listener, err := listenConfig.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -51,12 +57,17 @@ func NewGRPCServer(ctx context.Context, port int, userHandler *user.Handler) (*G
 	)
 
 	userv1.RegisterUserServiceServer(srv, userHandler)
+	userv1.RegisterMockUserServiceServer(srv, mockUserHandler)
 
 	healthServer := health.NewServer()
 	healthv1.RegisterHealthServer(srv, healthServer)
 	healthServer.SetServingStatus("", healthv1.HealthCheckResponse_SERVING)
 	healthServer.SetServingStatus(
 		userv1.UserService_ServiceDesc.ServiceName,
+		healthv1.HealthCheckResponse_SERVING,
+	)
+	healthServer.SetServingStatus(
+		userv1.MockUserService_ServiceDesc.ServiceName,
 		healthv1.HealthCheckResponse_SERVING,
 	)
 

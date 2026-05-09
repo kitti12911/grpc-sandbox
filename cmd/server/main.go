@@ -10,6 +10,7 @@ import (
 
 	"grpc-sandbox/internal/config"
 	"grpc-sandbox/internal/database"
+	"grpc-sandbox/internal/feature/mockuser"
 	"grpc-sandbox/internal/feature/user"
 	"grpc-sandbox/internal/server"
 
@@ -91,9 +92,10 @@ func run() int {
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository, db)
 	userHandler := user.NewHandler(userService)
+	mockUserHandler := mockuser.NewHandler()
 
 	// Start gRPC server
-	srv, err := server.NewGRPCServer(ctx, cfg.Service.Port, userHandler)
+	srv, err := server.NewGRPCServer(ctx, cfg.Service.Port, userHandler, mockUserHandler)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to create gRPC server", "error", err)
 		return 1
