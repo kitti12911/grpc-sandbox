@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 )
 
@@ -37,4 +38,14 @@ func TestErrorHandlerAddsTraceIDToAppError(t *testing.T) {
 func TestMessageWithTraceID(t *testing.T) {
 	assert.Equal(t, "failed", messageWithTraceID("failed", ""))
 	assert.Equal(t, "failed (trace_id=abc)", messageWithTraceID("failed", "abc"))
+}
+
+func TestHealthCheckFiltering(t *testing.T) {
+	assert.True(t, IsHealthCheck("/grpc.health.v1.Health/Check"))
+	assert.True(t, IsHealthCheck("/grpc.health.v1.Health/Watch"))
+	assert.False(t, IsHealthCheck("/user.v1.UserService/GetUser"))
+
+	assert.False(t, TraceableRPC(&stats.RPCTagInfo{FullMethodName: "/grpc.health.v1.Health/Check"}))
+	assert.True(t, TraceableRPC(&stats.RPCTagInfo{FullMethodName: "/user.v1.UserService/GetUser"}))
+	assert.True(t, TraceableRPC(nil))
 }
