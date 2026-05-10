@@ -7,7 +7,9 @@ import (
 	"net"
 
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
+	workerv1 "grpc-sandbox/gen/grpc/worker/v1"
 	"grpc-sandbox/internal/feature/user"
+	"grpc-sandbox/internal/feature/worker"
 	"grpc-sandbox/internal/server/interceptor"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
@@ -30,6 +32,7 @@ func NewGRPCServer(
 	ctx context.Context,
 	port int,
 	userHandler *user.Handler,
+	workerHandler *worker.Handler,
 ) (*GRPCServer, error) {
 	listenConfig := net.ListenConfig{}
 	listener, err := listenConfig.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
@@ -55,12 +58,17 @@ func NewGRPCServer(
 	)
 
 	userv1.RegisterUserServiceServer(srv, userHandler)
+	workerv1.RegisterWorkerServiceServer(srv, workerHandler)
 
 	healthServer := health.NewServer()
 	healthv1.RegisterHealthServer(srv, healthServer)
 	healthServer.SetServingStatus("", healthv1.HealthCheckResponse_SERVING)
 	healthServer.SetServingStatus(
 		userv1.UserService_ServiceDesc.ServiceName,
+		healthv1.HealthCheckResponse_SERVING,
+	)
+	healthServer.SetServingStatus(
+		workerv1.WorkerService_ServiceDesc.ServiceName,
 		healthv1.HealthCheckResponse_SERVING,
 	)
 

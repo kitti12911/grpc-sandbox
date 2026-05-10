@@ -11,8 +11,10 @@ import (
 	"grpc-sandbox/internal/config"
 	"grpc-sandbox/internal/database"
 	"grpc-sandbox/internal/feature/user"
+	"grpc-sandbox/internal/feature/worker"
 	"grpc-sandbox/internal/server"
 
+	async "github.com/kitti12911/lib-async"
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
 	libconfig "github.com/kitti12911/lib-util/v3/config"
@@ -75,6 +77,18 @@ func run() int {
 		}
 	}()
 
+	// Init async bus
+	bus, err := async.NewNATS(cfg.NATS, nil)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to connect to nats", "error", err)
+		return 1
+	}
+	defer func() {
+		if closeErr := bus.Close(); closeErr != nil {
+			slog.ErrorContext(ctx, "failed to close nats bus", "error", closeErr)
+		}
+	}()
+
 	// Init database
 	db, err := database.New(ctx, cfg)
 	if err != nil {
@@ -91,9 +105,11 @@ func run() int {
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository, db)
 	userHandler := user.NewHandler(userService)
+	workerService := worker.NewService(bus, cfg.Worker.Topic)
+	workerHandler := worker.NewHandler(workerService)
 
 	// Start gRPC server
-	srv, err := server.NewGRPCServer(ctx, cfg.Service.Port, userHandler)
+	srv, err := server.NewGRPCServer(ctx, cfg.Service.Port, userHandler, workerHandler)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to create gRPC server", "error", err)
 		return 1
