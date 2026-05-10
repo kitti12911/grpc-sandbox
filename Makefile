@@ -48,3 +48,5 @@ gen-go:
 gen-proto:
 	rm -rf gen/grpc
 	buf generate
+
+# pipeline triggered #1
