@@ -5,9 +5,10 @@ go 1.26.3
 require (
 	github.com/dromara/carbon/v2 v2.6.16
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
-	github.com/kitti12911/lib-monitor v1.8.0
-	github.com/kitti12911/lib-orm/v2 v2.5.0
-	github.com/kitti12911/lib-util/v3 v3.7.0
+	github.com/kitti12911/lib-async v1.1.0
+	github.com/kitti12911/lib-monitor v1.9.0
+	github.com/kitti12911/lib-orm/v2 v2.7.0
+	github.com/kitti12911/lib-util/v3 v3.8.0
 	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
@@ -24,6 +25,8 @@ require (
 )
 
 require (
+	github.com/ThreeDotsLabs/watermill v1.5.1 // indirect
+	github.com/ThreeDotsLabs/watermill-nats/v2 v2.1.3 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -40,9 +43,15 @@ require (
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.9 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect
+	github.com/nats-io/nats.go v1.52.0 // indirect
+	github.com/nats-io/nkeys v0.4.15 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
