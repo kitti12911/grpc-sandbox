@@ -18,6 +18,8 @@ on:
                 value: ${{ jobs.release.outputs.git_tag }}
             image_digest:
                 value: ${{ jobs.publish.outputs.image_digest }}
+            amd64_digest:
+                value: ${{ jobs.publish.outputs.amd64_digest }}
             arm64_digest:
                 value: ${{ jobs.publish.outputs.arm64_digest }}
 
@@ -42,6 +44,10 @@ jobs:
             credentials:
                 username: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
                 password: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+        permissions:
+            contents: write
+            issues: write
+            pull-requests: write
         outputs:
             release_created: ${{ steps.plan.outputs.release_created }}
             tag_name: ${{ steps.plan.outputs.tag_name }}
@@ -73,10 +79,9 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    # Re-enable when x86 images are needed again.
-                    # - arch: amd64
-                    #   platform: linux/amd64
-                    #   runner: ubuntu-latest
+                    - arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
                     - arch: arm64
                       platform: linux/arm64
                       runner: ubuntu-24.04-arm
@@ -178,6 +183,7 @@ jobs:
             needs.release.outputs.published == 'true'
         outputs:
             image_digest: ${{ steps.image.outputs.digest }}
+            amd64_digest: ${{ steps.image.outputs.amd64_digest }}
             arm64_digest: ${{ steps.image.outputs.arm64_digest }}
         env:
             REGISTRY: ${{ vars.IMAGE_REGISTRY }}
@@ -185,10 +191,7 @@ jobs:
             IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox
             RELEASE_TAG: ${{ needs.release.outputs.git_tag }}
             ENV_TAG: ${{ needs.release.outputs.env_tag }}
-            IMAGE_ARCHES: arm64
-            STAGING_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:staging-${{ inputs.release_sha }}-arm64
-            ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ needs.release.outputs.git_tag }}-arm64
-            SHA_ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ inputs.release_sha }}-arm64
+            IMAGE_ARCHES: amd64 arm64
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -196,7 +199,7 @@ jobs:
                   ref: ${{ env.RELEASE_SHA }}
 
             - name: Check release inputs
-              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF RELEASE_TAG STAGING_IMAGE_REF ARCH_IMAGE_REF SHA_ARCH_IMAGE_REF
+              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF RELEASE_TAG
 
             - name: Set up Docker Buildx
               run: ./scripts/ci/setup-buildx.sh
@@ -211,7 +214,13 @@ jobs:
             - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
 
             - name: Promote scanned image tags
-              run: ./scripts/ci/promote-image.sh
+              run: |
+                  for arch in ${IMAGE_ARCHES}; do
+                      STAGING_IMAGE_REF="${IMAGE_REF}:staging-${RELEASE_SHA}-${arch}" \
+                      ARCH_IMAGE_REF="${IMAGE_REF}:${RELEASE_TAG}-${arch}" \
+                      SHA_ARCH_IMAGE_REF="${IMAGE_REF}:${RELEASE_SHA}-${arch}" \
+                      ./scripts/ci/promote-image.sh
+                  done
 
             - name: Create multi-arch manifest
               run: ./scripts/ci/publish-manifest.sh
