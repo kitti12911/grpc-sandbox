@@ -27,6 +27,37 @@ Optional:
 
 - [prettier](https://prettier.io/) for Markdown, YAML, JSON, and JSONC formatting
 
+## ci commands
+
+reusable CI entrypoints live in `scripts/ci/` so GitHub Actions and GitLab CI
+can call the same commands with provider-specific orchestration around them.
+
+| command                                    | purpose                                      |
+| ------------------------------------------ | -------------------------------------------- |
+| `./scripts/ci/generate-code.sh`            | generate protobuf, field-map, and PATCH code |
+| `./scripts/ci/go-lint.sh`                  | run `go vet` and `golangci-lint`             |
+| `./scripts/ci/go-test.sh`                  | run tests with filtered coverage             |
+| `./scripts/ci/markdownlint.sh`             | run Markdown linting                         |
+| `./scripts/ci/security-scan.sh`            | run `govulncheck` and Semgrep                |
+| `./scripts/ci/supply-chain-scan.sh`        | run Trivy and Gitleaks                       |
+| `./scripts/ci/semantic-release-plan.sh`    | preview the next semantic release            |
+| `./scripts/ci/semantic-release-publish.sh` | publish the semantic release                 |
+
+GitHub Actions uses `TOOLCHAIN_REGISTRY` and `TOOLCHAIN_IMAGE_NAMESPACE` to
+resolve shared CI toolchain images, and `IMAGE_REGISTRY` plus `IMAGE_NAMESPACE`
+to publish the application image. GitLab should map its CI variables and image
+credentials to the same script inputs instead of duplicating command logic.
+The `homelab-devops` values update in `.github/workflows/go-ci.yml` is
+GitHub-specific homelab orchestration, not part of the portable script contract.
+GitLab deployments can use a different project, folder layout, or deployment
+tool by calling the same `scripts/ci` build/release helpers and adding its own
+deploy job. `DEPLOY_IMAGE_REGISTRY` and `DEPLOY_IMAGE_NAMESPACE` only affect the
+homelab GitOps values update and can be omitted outside that workflow.
+
+`GO_TEST_RACE=true` or `GO_TEST_CGO=true` requires a C compiler in the selected
+toolchain image. `grpc-sandbox` sets `GO_TEST_RACE=false` in GitHub Actions
+while using `image-toolchain` v1.1.0 because that image does not include one.
+
 ## project structure
 
 ```bash
@@ -140,18 +171,21 @@ each table is patched separately.
 
 ## available commands
 
-| Command          | Description                                           |
-| ---------------- | ----------------------------------------------------- |
-| `make air`       | Run the service with Air live reload                  |
-| `make tidy`      | Run `go mod tidy`                                     |
-| `make run`       | Start the gRPC server locally                         |
-| `make lint`      | Run Go and Markdown linting                           |
-| `make fmt`       | Format Go code with `go fmt`                          |
-| `make pretty`    | Format Markdown, YAML, JSON, and JSONC                |
-| `make format`    | Run Go and document/config formatting                 |
-| `make test`      | Run tests with the race detector                      |
-| `make cov`       | Generate and open an HTML coverage report             |
-| `make fix`       | Apply standard Go source rewrites with `go fix`       |
-| `make gen`       | Generate protobuf clients, field maps, and PATCH code |
-| `make gen-go`    | Generate database field maps and PATCH helper code    |
-| `make gen-proto` | Generate protobuf clients from `proto-sandbox`        |
+| Command            | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| `make air`         | Run the service with Air live reload                  |
+| `make tidy`        | Run `go mod tidy`                                     |
+| `make run`         | Start the gRPC server locally                         |
+| `make lint`        | Run Go and Markdown linting                           |
+| `make ci-generate` | Run CI code generation                                |
+| `make ci-lint`     | Run CI Go linting                                     |
+| `make ci-test`     | Run CI tests with filtered coverage                   |
+| `make fmt`         | Format Go code with `go fmt`                          |
+| `make pretty`      | Format Markdown, YAML, JSON, and JSONC                |
+| `make format`      | Run Go and document/config formatting                 |
+| `make test`        | Run tests with the race detector                      |
+| `make cov`         | Generate and open an HTML coverage report             |
+| `make fix`         | Apply standard Go source rewrites with `go fix`       |
+| `make gen`         | Generate protobuf clients, field maps, and PATCH code |
+| `make gen-go`      | Generate database field maps and PATCH helper code    |
+| `make gen-proto`   | Generate protobuf clients from `proto-sandbox`        |
