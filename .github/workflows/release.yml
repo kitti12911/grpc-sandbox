@@ -11,11 +11,11 @@ on:
                 type: string
         outputs:
             published:
-                value: ${{ jobs.version.outputs.published }}
+                value: ${{ jobs.release.outputs.published }}
             version:
-                value: ${{ jobs.version.outputs.version }}
+                value: ${{ jobs.release.outputs.version }}
             git_tag:
-                value: ${{ jobs.version.outputs.git_tag }}
+                value: ${{ jobs.release.outputs.git_tag }}
             image_digest:
                 value: ${{ jobs.publish.outputs.image_digest }}
             arm64_digest:
@@ -34,23 +34,17 @@ env:
     RELEASE_SHA: ${{ inputs.release_sha }}
 
 jobs:
-    version:
-        name: Publish Semantic Release
+    plan:
+        name: Plan Semantic Release
         runs-on: ubuntu-latest
         container:
             image: ${{ vars.TOOLCHAIN_REGISTRY }}/${{ vars.TOOLCHAIN_IMAGE_NAMESPACE }}/release-toolchain@sha256:aaba512b7e0bce0b866ce97ff6eb3cb27b7a58ba4cb4995c9fa64af571850193
             credentials:
                 username: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
                 password: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
-        permissions:
-            contents: write
-            issues: write
-            pull-requests: write
         outputs:
-            published: ${{ steps.semantic.outputs.published }}
-            version: ${{ steps.semantic.outputs.version }}
-            git_tag: ${{ steps.semantic.outputs.git_tag }}
-            env_tag: ${{ steps.semantic.outputs.env_tag }}
+            release_created: ${{ steps.plan.outputs.release_created }}
+            tag_name: ${{ steps.plan.outputs.tag_name }}
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -63,9 +57,9 @@ jobs:
                   git config --global --add safe.directory "$(pwd)"
                   git reset --hard "${RELEASE_SHA}"
 
-            - id: semantic
-              name: Publish semantic release
-              run: CI_OUTPUT_FILE="${GITHUB_OUTPUT}" ./scripts/ci/semantic-release-publish.sh --no-ci
+            - id: plan
+              name: Run semantic-release dry-run
+              run: CI_OUTPUT_FILE="${GITHUB_OUTPUT}" ./scripts/ci/semantic-release-plan.sh --no-ci
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -73,8 +67,8 @@ jobs:
         name: Build and Scan Image (${{ matrix.arch }})
         runs-on: ${{ matrix.runner }}
         needs:
-            - version
-        if: needs.version.outputs.published == 'true'
+            - plan
+        if: needs.plan.outputs.release_created == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -91,8 +85,6 @@ jobs:
             IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
             IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox
             STAGING_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:staging-${{ inputs.release_sha }}-${{ matrix.arch }}
-            ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ needs.version.outputs.git_tag }}-${{ matrix.arch }}
-            SHA_ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ inputs.release_sha }}-${{ matrix.arch }}
             TOOLCHAIN_IMAGE: ${{ vars.TOOLCHAIN_REGISTRY }}/${{ vars.TOOLCHAIN_IMAGE_NAMESPACE }}/image-toolchain@sha256:55e03f1a59c20fbd37a400a95924be84fbd1814db2bf511c4fdb3fdefbcf6b2c
         steps:
             # actions/checkout v6.0.2
@@ -101,7 +93,7 @@ jobs:
                   ref: ${{ env.RELEASE_SHA }}
 
             - name: Check release inputs
-              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF STAGING_IMAGE_REF ARCH_IMAGE_REF SHA_ARCH_IMAGE_REF TOOLCHAIN_IMAGE
+              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF STAGING_IMAGE_REF TOOLCHAIN_IMAGE
 
             - name: Set up Docker Buildx
               run: ./scripts/ci/setup-buildx.sh
@@ -135,16 +127,55 @@ jobs:
                   TRIVY_USERNAME: ${{ secrets.IMAGE_REGISTRY_USERNAME }}
                   TRIVY_PASSWORD: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
 
-            - name: Promote scanned image tags
-              run: ./scripts/ci/promote-image.sh
+    release:
+        name: Publish Semantic Release
+        runs-on: ubuntu-latest
+        container:
+            image: ${{ vars.TOOLCHAIN_REGISTRY }}/${{ vars.TOOLCHAIN_IMAGE_NAMESPACE }}/release-toolchain@sha256:aaba512b7e0bce0b866ce97ff6eb3cb27b7a58ba4cb4995c9fa64af571850193
+            credentials:
+                username: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
+                password: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+        needs:
+            - plan
+            - build
+        if: needs.plan.outputs.release_created == 'true'
+        permissions:
+            contents: write
+            issues: write
+            pull-requests: write
+        outputs:
+            published: ${{ steps.semantic.outputs.published }}
+            version: ${{ steps.semantic.outputs.version }}
+            git_tag: ${{ steps.semantic.outputs.git_tag }}
+            env_tag: ${{ steps.semantic.outputs.env_tag }}
+        steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                  ref: ${{ env.RELEASE_BRANCH }}
+                  fetch-depth: 0
+
+            - name: Pin release commit
+              run: |
+                  git config --global --add safe.directory "$(pwd)"
+                  git reset --hard "${RELEASE_SHA}"
+
+            - id: semantic
+              name: Publish semantic release
+              run: CI_OUTPUT_FILE="${GITHUB_OUTPUT}" ./scripts/ci/semantic-release-publish.sh --no-ci
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     publish:
         name: Publish Multi-Arch Image
         runs-on: ubuntu-latest
         needs:
-            - version
+            - plan
+            - release
             - build
-        if: needs.version.outputs.published == 'true'
+        if: |
+            needs.plan.outputs.release_created == 'true' &&
+            needs.release.outputs.published == 'true'
         outputs:
             image_digest: ${{ steps.image.outputs.digest }}
             arm64_digest: ${{ steps.image.outputs.arm64_digest }}
@@ -152,9 +183,12 @@ jobs:
             REGISTRY: ${{ vars.IMAGE_REGISTRY }}
             IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
             IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox
-            RELEASE_TAG: ${{ needs.version.outputs.git_tag }}
-            ENV_TAG: ${{ needs.version.outputs.env_tag }}
+            RELEASE_TAG: ${{ needs.release.outputs.git_tag }}
+            ENV_TAG: ${{ needs.release.outputs.env_tag }}
             IMAGE_ARCHES: arm64
+            STAGING_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:staging-${{ inputs.release_sha }}-arm64
+            ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ needs.release.outputs.git_tag }}-arm64
+            SHA_ARCH_IMAGE_REF: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAMESPACE }}/grpc-sandbox:${{ inputs.release_sha }}-arm64
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -162,7 +196,7 @@ jobs:
                   ref: ${{ env.RELEASE_SHA }}
 
             - name: Check release inputs
-              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF RELEASE_TAG
+              run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF RELEASE_TAG STAGING_IMAGE_REF ARCH_IMAGE_REF SHA_ARCH_IMAGE_REF
 
             - name: Set up Docker Buildx
               run: ./scripts/ci/setup-buildx.sh
@@ -175,6 +209,9 @@ jobs:
 
             # sigstore/cosign-installer v4.1.1
             - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
+
+            - name: Promote scanned image tags
+              run: ./scripts/ci/promote-image.sh
 
             - name: Create multi-arch manifest
               run: ./scripts/ci/publish-manifest.sh
