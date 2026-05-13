@@ -10,6 +10,30 @@ run:
 
 lint: vet golangci-lint markdownlint
 
+ci-generate:
+	./scripts/ci/generate-code.sh
+
+ci-lint:
+	./scripts/ci/go-lint.sh
+
+ci-test:
+	./scripts/ci/go-test.sh
+
+ci-security:
+	./scripts/ci/security-scan.sh
+
+ci-supply-chain:
+	./scripts/ci/supply-chain-scan.sh
+
+ci-markdownlint:
+	./scripts/ci/markdownlint.sh
+
+release-plan:
+	./scripts/ci/semantic-release-plan.sh
+
+release-publish:
+	./scripts/ci/semantic-release-publish.sh
+
 vet:
 	go vet ./...
 
@@ -17,7 +41,7 @@ golangci-lint:
 	golangci-lint run --timeout=5m
 
 markdownlint:
-	markdownlint-cli2
+	./scripts/ci/markdownlint.sh
 
 fmt:
 	go fmt ./...
@@ -42,8 +66,8 @@ gen: gen-proto gen-go
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/v2/cmd/fieldmapgen@v2.7.0 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
-	go run github.com/kitti12911/lib-orm/v2/cmd/patchfieldgen@v2.7.0 -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
+	go run github.com/kitti12911/lib-orm/v2/cmd/fieldmapgen@v2.9.0 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
+	go run github.com/kitti12911/lib-orm/v2/cmd/patchfieldgen@v2.9.0 -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
 
 gen-proto:
 	rm -rf gen/grpc
