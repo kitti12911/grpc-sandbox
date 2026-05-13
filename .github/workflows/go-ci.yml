@@ -299,6 +299,11 @@ jobs:
         permissions:
             contents: read
         steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                  path: grpc-sandbox
+
             # actions/create-github-app-token v2.1.4
             - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42
               id: homelab-devops-token
@@ -326,7 +331,7 @@ jobs:
                   IMAGE_NAME: grpc-sandbox
                   RELEASE_TAG: ${{ needs.release.outputs.git_tag }}
                   IMAGE_DIGEST: ${{ needs.release.outputs.image_digest }}
-              run: ./scripts/ci/update-helm-image-values.sh
+              run: ./grpc-sandbox/scripts/ci/update-helm-image-values.sh
 
             - name: Commit values update
               env:
@@ -340,7 +345,7 @@ jobs:
                   GIT_PUSH_REMOTE: origin
                   GIT_PUSH_REF: HEAD:main
                   GIT_REBASE_BRANCH: main
-              run: ./scripts/ci/commit-and-push-changes.sh
+              run: ./grpc-sandbox/scripts/ci/commit-and-push-changes.sh
 
     sync-down:
         name: Sync Main To Prerelease Branches
