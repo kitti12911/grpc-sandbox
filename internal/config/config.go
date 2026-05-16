@@ -6,7 +6,7 @@ import (
 	async "github.com/kitti12911/lib-async"
 	"github.com/kitti12911/lib-monitor/profiling"
 	"github.com/kitti12911/lib-monitor/tracing"
-	liborm "github.com/kitti12911/lib-orm/v2"
+	liborm "github.com/kitti12911/lib-orm/v3"
 	"github.com/kitti12911/lib-util/v3/logger"
 )
 

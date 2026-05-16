@@ -7,7 +7,7 @@ import (
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v2"
+	orm "github.com/kitti12911/lib-orm/v3"
 	"github.com/kitti12911/lib-util/v3/fieldmask"
 	"github.com/kitti12911/lib-util/v3/pagination"
 )
