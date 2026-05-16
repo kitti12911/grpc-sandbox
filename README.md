@@ -202,9 +202,6 @@ each table is patched separately.
 | `make tidy`        | Run `go mod tidy`                                     |
 | `make run`         | Start the gRPC server locally                         |
 | `make lint`        | Run Go and Markdown linting                           |
-| `make ci-generate` | Run CI code generation                                |
-| `make ci-lint`     | Run CI Go linting                                     |
-| `make ci-test`     | Run CI tests with filtered coverage                   |
 | `make fmt`         | Format Go code with `go fmt`                          |
 | `make pretty`      | Format Markdown, YAML, JSON, and JSONC                |
 | `make format`      | Run Go and document/config formatting                 |
