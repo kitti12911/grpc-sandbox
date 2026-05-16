@@ -16,30 +16,6 @@ run:
 
 lint: vet golangci-lint markdownlint
 
-ci-generate:
-	./scripts/ci/generate-code.sh
-
-ci-lint:
-	./scripts/ci/go-lint.sh
-
-ci-test:
-	GO_COVERAGE_EXCLUDE_REGEX='$(GO_COVERAGE_EXCLUDE_REGEX)' ./scripts/ci/go-test.sh
-
-ci-security:
-	./scripts/ci/security-scan.sh
-
-ci-supply-chain:
-	./scripts/ci/supply-chain-scan.sh
-
-ci-markdownlint:
-	./scripts/ci/markdownlint.sh
-
-release-plan:
-	./scripts/ci/semantic-release-plan.sh
-
-release-publish:
-	./scripts/ci/semantic-release-publish.sh
-
 vet:
 	go vet ./...
 
@@ -47,7 +23,7 @@ golangci-lint:
 	golangci-lint run --timeout=5m
 
 markdownlint:
-	./scripts/ci/markdownlint.sh
+	markdownlint-cli2
 
 fmt:
 	go fmt ./...
