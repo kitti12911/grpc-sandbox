@@ -174,11 +174,6 @@ func (stubTransactionProvider) Transaction(ctx context.Context, fn func(context.
 	return fn(ctx)
 }
 
-//go:fix inline
-func ptr[T any](value T) *T {
-	return new(value)
-}
-
 func requireAppError(t *testing.T, err error) *apperror.Error {
 	t.Helper()
 
