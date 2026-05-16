@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
 	github.com/kitti12911/lib-async v1.3.0
 	github.com/kitti12911/lib-monitor v1.10.0
-	github.com/kitti12911/lib-orm/v2 v2.9.0
+	github.com/kitti12911/lib-orm/v3 v3.0.1
 	github.com/kitti12911/lib-util/v3 v3.11.0
 	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18

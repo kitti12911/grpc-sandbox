@@ -10,7 +10,7 @@ import (
 	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v2"
+	orm "github.com/kitti12911/lib-orm/v3"
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 

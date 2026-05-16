@@ -1,3 +1,9 @@
+# Files outside the business logic surface (main, DB setup, gRPC handlers,
+# repositories, query glue, server bootstrap) are dropped from coverage so the
+# reported % reflects code worth testing. Patterns are awk regexes matched
+# against the file:line column of coverage.out.
+GO_COVERAGE_EXCLUDE_REGEX = /cmd/|/internal/database/|/handler\.go:|/query\.go:|/repository\.go:|/internal/server/grpc\.go:
+
 # ____________________ Go Command ____________________
 air:
 	air
@@ -17,7 +23,7 @@ ci-lint:
 	./scripts/ci/go-lint.sh
 
 ci-test:
-	./scripts/ci/go-test.sh
+	GO_COVERAGE_EXCLUDE_REGEX='$(GO_COVERAGE_EXCLUDE_REGEX)' ./scripts/ci/go-test.sh
 
 ci-security:
 	./scripts/ci/security-scan.sh
@@ -55,7 +61,7 @@ test:
 	env CGO_ENABLED=1 go test --race -v ./...
 
 cov:
-	go test -coverprofile=coverage.out ./...
+	GO_COVERAGE_EXCLUDE_REGEX='$(GO_COVERAGE_EXCLUDE_REGEX)' ./scripts/ci/go-test.sh
 	go tool cover -html=coverage.out
 
 fix: 
@@ -66,8 +72,8 @@ gen: gen-proto gen-go
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/v2/cmd/fieldmapgen@v2.9.0 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
-	go run github.com/kitti12911/lib-orm/v2/cmd/patchfieldgen@v2.9.0 -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
+	go run github.com/kitti12911/lib-orm/v3/cmd/fieldmapgen@v3.0.1 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
+	go run github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen@v3.0.1 -config internal/feature/user/patchfields.yaml
 
 gen-proto:
 	rm -rf gen/grpc
