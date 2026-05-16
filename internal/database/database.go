@@ -7,7 +7,7 @@ import (
 	"grpc-sandbox/internal/database/migrations"
 	"grpc-sandbox/internal/database/seeders"
 
-	orm "github.com/kitti12911/lib-orm/v2"
+	orm "github.com/kitti12911/lib-orm/v3"
 )
 
 func New(ctx context.Context, cfg *config.Config) (*orm.DB, error) {

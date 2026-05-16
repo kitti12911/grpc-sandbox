@@ -3,7 +3,7 @@ package user
 import (
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v2"
+	orm "github.com/kitti12911/lib-orm/v3"
 )
 
 type GetByIDParams struct {

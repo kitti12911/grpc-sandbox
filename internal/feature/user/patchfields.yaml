@@ -1,0 +1,22 @@
+# Config for patchfieldgen (see github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen).
+# Regenerate with `make gen-go`.
+targets:
+    - file: internal/feature/user/user.go
+      root: CreateParams
+      out: internal/feature/user/patch_generated.go
+      package: user
+      root_selector: params.User
+      paths_selector: params.Fields
+      buckets:
+          - map_field: userFields
+          - path: profile
+            map_field: profileFields
+          - path: profile.address
+            map_field: addressFields
+      copies:
+          - source: params.User.Profile
+            target: data.profile
+          - source: params.User.Profile.Address
+            target: data.address
+            guards:
+                - params.User.Profile
