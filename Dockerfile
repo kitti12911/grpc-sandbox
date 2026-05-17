@@ -14,7 +14,7 @@ COPY internal ./internal
 RUN rm -rf gen/grpc gen/database \
 	&& buf generate \
 	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
-	&& patchfieldgen -file internal/feature/user/user.go -root CreateParams -out internal/feature/user/patch_generated.go -package user -fieldmap-import grpc-sandbox/gen/database -root-selector params.User -paths-selector params.Fields -bucket root:userFields:fieldmap.IsUserRootField -bucket profile:profileFields:fieldmap.IsUserProfileField -bucket profile.address:addressFields:fieldmap.IsUserAddressField -copy params.User.Profile:data.profile -copy params.User.Profile.Address:data.address:params.User.Profile
+	&& patchfieldgen -config internal/feature/user/patchfields.yaml
 
 ARG TARGETOS
 ARG TARGETARCH
