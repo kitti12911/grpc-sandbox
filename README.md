@@ -139,7 +139,7 @@ make gen
   `internal/feature/user/patch_generated.go`
 
 The generated field maps and patch extractor come from
-[`github.com/kitti12911/lib-orm/v2`](https://github.com/kitti12911/lib-orm)
+[`github.com/kitti12911/lib-orm/v3`](https://github.com/kitti12911/lib-orm)
 generator commands.
 
 Generator notes:
