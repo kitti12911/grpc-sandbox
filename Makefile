@@ -44,12 +44,16 @@ fix:
 	go fix ./...
 
 # ____________________ Generate Command ____________________
-gen: gen-proto gen-go
+gen: gen-proto gen-go gen-mappers
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/v3/cmd/fieldmapgen@v3.0.1 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
-	go run github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen@v3.0.1 -config internal/feature/user/patchfields.yaml
+	go run github.com/kitti12911/lib-orm/v3/cmd/fieldmapgen@v3.3.0 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
+	go run github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen@v3.3.0 -config internal/feature/user/patchfields.yaml
+
+gen-mappers:
+	rm -f internal/feature/user/mapper_generated.go
+	go run github.com/kitti12911/lib-orm/v3/cmd/protomapgen@v3.3.0 -config protomapgen.yaml
 
 gen-proto:
 	rm -rf gen/grpc

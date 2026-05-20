@@ -2,57 +2,13 @@ package user
 
 import (
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
-	"grpc-sandbox/internal/database"
 
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func toProtoUser(user *database.User) *userv1.User {
-	if user == nil {
-		return nil
-	}
-
-	return &userv1.User{
-		Id:          user.ID,
-		Email:       user.Email,
-		Username:    user.Username,
-		DisplayName: user.DisplayName,
-		Status:      toProtoUserStatus(user.Status),
-		Profile:     toProtoUserProfile(user.Profile),
-		CreatedAt:   timestamppb.New(user.CreatedAt),
-		UpdatedAt:   timestamppb.New(user.UpdatedAt),
-	}
-}
-
-func toProtoUserProfile(profile *database.UserProfile) *userv1.UserProfile {
-	if profile == nil {
-		return nil
-	}
-
-	return &userv1.UserProfile{
-		FirstName:   profile.FirstName,
-		LastName:    profile.LastName,
-		PhoneNumber: profile.PhoneNumber,
-		Address:     toProtoUserAddress(profile.Address),
-	}
-}
-
-func toProtoUserAddress(address *database.UserAddress) *userv1.UserAddress {
-	if address == nil {
-		return nil
-	}
-
-	return &userv1.UserAddress{
-		Line1:       address.Line1,
-		Line2:       address.Line2,
-		City:        address.City,
-		State:       address.State,
-		PostalCode:  address.PostalCode,
-		CountryCode: address.CountryCode,
-	}
-}
-
+// toProtoUserStatus and userStatusFromProto bridge the database `status`
+// column (string) and the proto UserStatus enum. The generated mappers wire
+// them in through `converters:` in protomapgen.yaml.
 func toProtoUserStatus(status string) userv1.UserStatus {
 	switch status {
 	case "active":
@@ -63,74 +19,6 @@ func toProtoUserStatus(status string) userv1.UserStatus {
 		return userv1.UserStatus_USER_STATUS_PENDING
 	default:
 		return userv1.UserStatus_USER_STATUS_UNSPECIFIED
-	}
-}
-
-func createParamsFromProto(user *userv1.User) CreateParams {
-	if user == nil {
-		return CreateParams{}
-	}
-
-	return CreateParams{
-		Email:       user.GetEmail(),
-		Username:    user.GetUsername(),
-		DisplayName: user.DisplayName,
-		Status:      userStatusFromProto(user.GetStatus()),
-		Profile:     createProfileParamsFromProto(user.GetProfile()),
-	}
-}
-
-func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
-	if user == nil {
-		return UpdateParams{ID: id}
-	}
-
-	return UpdateParams{
-		ID:          id,
-		Email:       user.GetEmail(),
-		Username:    user.GetUsername(),
-		DisplayName: user.DisplayName,
-		Status:      userStatusFromProto(user.GetStatus()),
-		Profile:     createProfileParamsFromProto(user.GetProfile()),
-	}
-}
-
-func patchParamsFromProto(id string, user *userv1.User, mask *fieldmaskpb.FieldMask) PatchParams {
-	if mask == nil {
-		return PatchParams{ID: id, User: createParamsFromProto(user)}
-	}
-	return PatchParams{
-		ID:     id,
-		User:   createParamsFromProto(user),
-		Fields: mask.GetPaths(),
-	}
-}
-
-func createProfileParamsFromProto(profile *userv1.UserProfile) *CreateProfileParams {
-	if profile == nil {
-		return nil
-	}
-
-	return &CreateProfileParams{
-		FirstName:   profile.FirstName,
-		LastName:    profile.LastName,
-		PhoneNumber: profile.PhoneNumber,
-		Address:     createAddressParamsFromProto(profile.GetAddress()),
-	}
-}
-
-func createAddressParamsFromProto(address *userv1.UserAddress) *CreateAddressParams {
-	if address == nil {
-		return nil
-	}
-
-	return &CreateAddressParams{
-		Line1:       address.Line1,
-		Line2:       address.Line2,
-		City:        address.City,
-		State:       address.State,
-		PostalCode:  address.PostalCode,
-		CountryCode: address.CountryCode,
 	}
 }
 
@@ -145,4 +33,30 @@ func userStatusFromProto(status userv1.UserStatus) string {
 	default:
 		return ""
 	}
+}
+
+// updateParamsFromProto and patchParamsFromProto compose the generated
+// createParamsFromProto with the extra inputs (id, FieldMask) that
+// protomapgen does not currently model.
+func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
+	params := createParamsFromProto(user)
+	return UpdateParams{
+		ID:          id,
+		Email:       params.Email,
+		Username:    params.Username,
+		DisplayName: params.DisplayName,
+		Status:      params.Status,
+		Profile:     params.Profile,
+	}
+}
+
+func patchParamsFromProto(id string, user *userv1.User, mask *fieldmaskpb.FieldMask) PatchParams {
+	out := PatchParams{
+		ID:   id,
+		User: createParamsFromProto(user),
+	}
+	if mask != nil {
+		out.Fields = mask.GetPaths()
+	}
+	return out
 }
