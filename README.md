@@ -32,17 +32,17 @@ Optional:
 reusable CI entrypoints live in `scripts/ci/` so GitHub Actions can call the
 same commands with workflow-specific orchestration around them.
 
-| command                                            | purpose                                       |
-| -------------------------------------------------- | --------------------------------------------- |
-| `./scripts/ci/generate-code.sh`                    | generate protobuf, field-map, and PATCH code  |
-| `./scripts/ci/go-lint.sh`                          | run `go vet` and `golangci-lint`              |
-| `./scripts/ci/go-test.sh`                          | run tests with filtered coverage              |
-| `./scripts/ci/markdownlint.sh`                     | run Markdown linting                          |
-| `./scripts/ci/security-scan.sh`                    | run `govulncheck` and Semgrep                 |
-| `./scripts/ci/supply-chain-scan.sh`                | run Trivy and Gitleaks                        |
-| `./scripts/ci/semantic-release-publish.sh`         | publish the semantic release                  |
-| `./scripts/ci/fast-forward-prerelease-branches.sh` | fast-forward `uat` and `develop` after `main` |
-| `./scripts/ci/update-helm-image-values.sh`         | update homelab GitOps image values            |
+| command                                            | purpose                                              |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| `./scripts/ci/generate-code.sh`                    | generate protobuf, field-map, PATCH, and mapper code |
+| `./scripts/ci/go-lint.sh`                          | run `go vet` and `golangci-lint`                     |
+| `./scripts/ci/go-test.sh`                          | run tests with filtered coverage                     |
+| `./scripts/ci/markdownlint.sh`                     | run Markdown linting                                 |
+| `./scripts/ci/security-scan.sh`                    | run `govulncheck` and Semgrep                        |
+| `./scripts/ci/supply-chain-scan.sh`                | run Trivy and Gitleaks                               |
+| `./scripts/ci/semantic-release-publish.sh`         | publish the semantic release                         |
+| `./scripts/ci/fast-forward-prerelease-branches.sh` | fast-forward `uat` and `develop` after `main`        |
+| `./scripts/ci/update-helm-image-values.sh`         | update homelab GitOps image values                   |
 
 GitHub Actions uses `TOOLCHAIN_REGISTRY` and `TOOLCHAIN_IMAGE_NAMESPACE` to
 resolve shared CI toolchain images, and `IMAGE_REGISTRY` plus `IMAGE_NAMESPACE`
@@ -108,6 +108,7 @@ make gen
 - Bun field-map generation into `gen/database`
 - PATCH field-mask extraction generation into
   `internal/feature/user/patch_generated.go`
+- proto mapper generation into `internal/feature/user/mapper_generated.go`
 
 The generated field maps and patch extractor come from
 [`github.com/kitti12911/lib-orm/v3`](https://github.com/kitti12911/lib-orm)
@@ -119,6 +120,8 @@ Generator notes:
   maps plus validator functions in `gen/database`.
 - `patchfieldgen` reads `internal/feature/user/user.go` and generates
   `patchFields(params PatchParams)`.
+- `protomapgen` reads `protomapgen.yaml` and generates proto-to-struct and
+  struct-to-proto mapper functions in `internal/feature/user/mapper_generated.go`.
 - `-root-selector params.User` means patch values are read from `params.User`.
 - `-paths-selector params.Fields` means field mask paths are read from
   `params.Fields`.

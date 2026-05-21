@@ -8,13 +8,16 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY buf.gen.yaml ./
+COPY protomapgen.yaml ./
 COPY cmd ./cmd
 COPY internal ./internal
 
 RUN rm -rf gen/grpc gen/database \
+	&& rm -f internal/feature/user/mapper_generated.go \
 	&& buf generate \
 	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
-	&& patchfieldgen -config internal/feature/user/patchfields.yaml
+	&& patchfieldgen -config internal/feature/user/patchfields.yaml \
+	&& protomapgen -config protomapgen.yaml
 
 ARG TARGETOS
 ARG TARGETARCH
