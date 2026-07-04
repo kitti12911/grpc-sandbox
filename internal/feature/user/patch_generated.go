@@ -2,6 +2,14 @@
 
 package user
 
+type patchData struct {
+	userFields    map[string]any
+	profileFields map[string]any
+	addressFields map[string]any
+	profile       CreateProfileParams
+	address       CreateAddressParams
+}
+
 func patchFields(params PatchParams) patchData {
 	data := patchData{
 		addressFields: make(map[string]any),

@@ -6,38 +6,9 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
-// toProtoUserStatus and userStatusFromProto bridge the database `status`
-// column (string) and the proto UserStatus enum. The generated mappers wire
-// them in through `converters:` in protomapgen.yaml.
-func toProtoUserStatus(status string) userv1.UserStatus {
-	switch status {
-	case "active":
-		return userv1.UserStatus_USER_STATUS_ACTIVE
-	case "disabled":
-		return userv1.UserStatus_USER_STATUS_DISABLED
-	case "pending":
-		return userv1.UserStatus_USER_STATUS_PENDING
-	default:
-		return userv1.UserStatus_USER_STATUS_UNSPECIFIED
-	}
-}
-
-func userStatusFromProto(status userv1.UserStatus) string {
-	switch status {
-	case userv1.UserStatus_USER_STATUS_ACTIVE:
-		return "active"
-	case userv1.UserStatus_USER_STATUS_DISABLED:
-		return "disabled"
-	case userv1.UserStatus_USER_STATUS_PENDING:
-		return "pending"
-	default:
-		return ""
-	}
-}
-
 // updateParamsFromProto and patchParamsFromProto compose the generated
-// createParamsFromProto with the extra inputs (id, FieldMask) that
-// mapgen proto does not currently model.
+// createParamsFromProto with the extra inputs (id, FieldMask) that the mapper
+// does not model.
 func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
 	params := createParamsFromProto(user)
 	return UpdateParams{

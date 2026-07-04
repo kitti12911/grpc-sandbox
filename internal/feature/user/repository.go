@@ -10,7 +10,7 @@ import (
 	fieldmap "grpc-sandbox/gen/database"
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v3"
+	orm "github.com/kitti12911/lib-orm/v4"
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
@@ -265,7 +265,7 @@ func (r *repository) List(ctx context.Context, params ListParams) (*ListResult, 
 		Relation("Profile").
 		Relation("Profile.Address")
 
-	if err := applyFilters(query, params.Filters); err != nil {
+	if err := applyFilter(query, params.Filter); err != nil {
 		return nil, err
 	}
 

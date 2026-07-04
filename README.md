@@ -106,35 +106,24 @@ make gen
   `internal/feature/user/patch_generated.go`
 - proto mapper generation into `internal/feature/user/mapper_generated.go`
 
-The generated field maps and patch extractor come from
-[`github.com/kitti12911/lib-orm/v3`](https://github.com/kitti12911/lib-orm)
-generator commands.
+The generators come from
+[`github.com/kitti12911/lib-orm/v4`](https://github.com/kitti12911/lib-orm)
+and are **zero-config** — they discover everything by naming convention (see
+the lib-orm README for the conventions and `//mapgen:*` directives).
 
 Generator notes:
 
-- `mapgen fields` reads Bun models under `internal/database` and generates field
-  maps plus validator functions in `gen/database`.
-- `mapgen patch` reads `internal/feature/user/user.go` and generates
-  `patchFields(params PatchParams)`.
-- `mapgen proto` reads `protomapgen.yaml` and generates proto-to-struct and
-  struct-to-proto mapper functions in `internal/feature/user/mapper_generated.go`.
-- `-root-selector params.User` means patch values are read from `params.User`.
-- `-paths-selector params.Fields` means field mask paths are read from
-  `params.Fields`.
-- `-bucket root:userFields:fieldmap.IsUserRootField` routes top-level paths
-  such as `email` into `data.userFields`.
-- `-bucket profile:profileFields:fieldmap.IsUserProfileField` routes paths
-  such as `profile.first_name` into `data.profileFields`.
-- `-bucket profile.address:addressFields:fieldmap.IsUserAddressField` routes
-  paths such as `profile.address.city` into `data.addressFields`.
-- `-copy params.User.Profile:data.profile` copies the full profile value when
-  present, so PATCH can create a missing profile row before updating it.
-- `-copy params.User.Profile.Address:data.address:params.User.Profile` copies
-  address with a profile nil guard, so generated code does not dereference a
-  nil profile.
-
-In short, buckets create SQL update maps, while copies carry nested create data
-for create-if-missing PATCH flows.
+- `mapgen fields` reads Bun models under `internal/database` and generates
+  field/column maps in `gen/database`.
+- `mapgen patch` finds `PatchParams` and generates the `patchData` struct plus
+  `patchFields(params PatchParams)`; buckets and nil-guarded copies are derived
+  from the payload struct's `field:"..."`-tagged shape.
+- `mapgen filter` generates `applyFilter`/`applyOrderBy` plus the custom-filter
+  registry (`//mapgen:filter col=<name>` functions back virtual columns).
+- `mapgen map` reads both the params structs and the generated proto types,
+  then emits mappers by field intersection — including the string↔enum
+  bridges. The worker feature has no bun root model, so the generator skips it
+  and its hand-written fallible mapper stays.
 
 ## run locally
 
