@@ -112,11 +112,11 @@ generator commands.
 
 Generator notes:
 
-- `fieldmapgen` reads Bun models under `internal/database` and generates field
+- `mapgen fields` reads Bun models under `internal/database` and generates field
   maps plus validator functions in `gen/database`.
-- `patchfieldgen` reads `internal/feature/user/user.go` and generates
+- `mapgen patch` reads `internal/feature/user/user.go` and generates
   `patchFields(params PatchParams)`.
-- `protomapgen` reads `protomapgen.yaml` and generates proto-to-struct and
+- `mapgen proto` reads `protomapgen.yaml` and generates proto-to-struct and
   struct-to-proto mapper functions in `internal/feature/user/mapper_generated.go`.
 - `-root-selector params.User` means patch values are read from `params.User`.
 - `-paths-selector params.Fields` means field mask paths are read from

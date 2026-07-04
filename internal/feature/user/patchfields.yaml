@@ -1,4 +1,4 @@
-# Config for patchfieldgen (see github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen).
+# Config for `mapgen patch` (see github.com/kitti12911/lib-orm/v3/cmd/mapgen).
 # Regenerate with `make gen-go`.
 targets:
     - file: internal/feature/user/user.go

@@ -37,7 +37,7 @@ func userStatusFromProto(status userv1.UserStatus) string {
 
 // updateParamsFromProto and patchParamsFromProto compose the generated
 // createParamsFromProto with the extra inputs (id, FieldMask) that
-// protomapgen does not currently model.
+// mapgen proto does not currently model.
 func updateParamsFromProto(id string, user *userv1.User) UpdateParams {
 	params := createParamsFromProto(user)
 	return UpdateParams{

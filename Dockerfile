@@ -15,9 +15,9 @@ COPY internal ./internal
 RUN rm -rf gen/grpc gen/database \
 	&& rm -f internal/feature/user/mapper_generated.go \
 	&& buf generate \
-	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
-	&& patchfieldgen -config internal/feature/user/patchfields.yaml \
-	&& protomapgen -config protomapgen.yaml
+	&& mapgen fields -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
+	&& mapgen patch -config internal/feature/user/patchfields.yaml \
+	&& mapgen proto -config protomapgen.yaml
 
 ARG TARGETOS
 ARG TARGETARCH
