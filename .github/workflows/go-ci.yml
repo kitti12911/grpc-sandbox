@@ -136,6 +136,9 @@ jobs:
             - name: Test with coverage
               run: ./scripts/ci/go-test.sh
               env:
+                  # PRs skip the race detector for speed; pushes (develop/uat/main)
+                  # keep the full CGO+race run as the release gate.
+                  GO_TEST_RACE: ${{ github.event_name == 'push' && 'true' || 'false' }}
                   # Keep in sync with GO_COVERAGE_EXCLUDE_REGEX in the Makefile
                   # so local `make cov` and CI report the same %.
                   GO_COVERAGE_EXCLUDE_REGEX: "/cmd/|/internal/database/|/handler\\.go:|/query\\.go:|/repository\\.go:|/internal/server/grpc\\.go:"
