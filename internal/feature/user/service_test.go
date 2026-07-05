@@ -353,6 +353,237 @@ func TestServicePatchCreatesMissingProfileAndAddress(t *testing.T) {
 	assert.Equal(t, int64(1), affectedRows)
 }
 
+func TestServicePatchUpdatesExistingProfileWithoutAddress(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc: func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) {
+			return "0198f8f0-0000-7000-8000-000000000aaa", nil
+		},
+		patchProfileByUserIDFunc: func(_ context.Context, userID string, fields map[string]any) (int64, error) {
+			assert.Equal(t, "0198f8f0-0000-7000-8000-000000000999", userID)
+			firstName, ok := fields["first_name"].(*string)
+			require.True(t, ok)
+			assert.Equal(t, "Ada", *firstName)
+			return 1, nil
+		},
+	}, stubTransactionProvider{})
+
+	affectedRows, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{FirstName: new("Ada")}},
+		Fields: []string{"profile.first_name"},
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), affectedRows)
+}
+
+func TestServicePatchUpdatesExistingAddress(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc: func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) {
+			return "0198f8f0-0000-7000-8000-000000000aaa", nil
+		},
+		patchAddressByProfileFunc: func(_ context.Context, profileID string, _ map[string]any) (int64, error) {
+			assert.Equal(t, "0198f8f0-0000-7000-8000-000000000aaa", profileID)
+			return 1, nil
+		},
+		createAddressFunc: func(context.Context, string, CreateAddressParams) (*database.UserAddress, error) {
+			t.Fatal("createAddress must not be called when the address patch affects rows")
+			return nil, nil
+		},
+	}, stubTransactionProvider{})
+
+	affectedRows, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{Address: &CreateAddressParams{City: new("Bangkok")}}},
+		Fields: []string{"profile.address.city"},
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), affectedRows)
+}
+
+func TestServicePatchProfileLookupError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc: func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) {
+			return "", errors.New("lookup failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{FirstName: new("Ada")}},
+		Fields: []string{"profile.first_name"},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServicePatchCreateProfileError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc:            func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) { return "", nil },
+		createProfileFunc: func(context.Context, string, CreateProfileParams) (*database.UserProfile, error) {
+			return nil, errors.New("create profile failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{FirstName: new("Ada")}},
+		Fields: []string{"profile.first_name"},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServicePatchAddressError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc: func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) {
+			return "0198f8f0-0000-7000-8000-000000000aaa", nil
+		},
+		patchAddressByProfileFunc: func(context.Context, string, map[string]any) (int64, error) {
+			return 0, errors.New("patch address failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{Address: &CreateAddressParams{City: new("Bangkok")}}},
+		Fields: []string{"profile.address.city"},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServicePatchProfileFieldsError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		patchUserFunc: func(context.Context, string, map[string]any) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) {
+			return "0198f8f0-0000-7000-8000-000000000aaa", nil
+		},
+		patchProfileByUserIDFunc: func(context.Context, string, map[string]any) (int64, error) {
+			return 0, errors.New("patch profile failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Patch(context.Background(), PatchParams{
+		ID:     "0198f8f0-0000-7000-8000-000000000999",
+		User:   CreateParams{Profile: &CreateProfileParams{FirstName: new("Ada")}},
+		Fields: []string{"profile.first_name"},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServiceUpdateClearsProfileDeleteAddressError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc: func(context.Context, UpdateParams) (int64, error) { return 1, nil },
+		deleteAddressByUserIDFunc: func(context.Context, string) error {
+			return errors.New("delete address failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServiceUpdateReplaceProfileLookupError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc:           func(context.Context, UpdateParams) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) { return "", errors.New("lookup failed") },
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+		Profile:  &CreateProfileParams{FirstName: new("Ada")},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServiceUpdateReplaceCreateProfileError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc:           func(context.Context, UpdateParams) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) { return "", nil },
+		createProfileFunc: func(context.Context, string, CreateProfileParams) (*database.UserProfile, error) {
+			return nil, errors.New("create profile failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+		Profile:  &CreateProfileParams{FirstName: new("Ada")},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServiceUpdateReplaceUpdateProfileError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc:           func(context.Context, UpdateParams) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc: func(context.Context, string) (string, error) { return "0198f8f0-0000-7000-8000-000000000aaa", nil },
+		updateProfileByUserIDFunc: func(context.Context, string, CreateProfileParams) (int64, error) {
+			return 0, errors.New("update profile failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+		Profile:  &CreateProfileParams{FirstName: new("Ada")},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
+func TestServiceUpdateReplaceAddressError(t *testing.T) {
+	service := NewService(stubUserRepository{
+		updateUserFunc:            func(context.Context, UpdateParams) (int64, error) { return 1, nil },
+		getProfileIDByUserIDFunc:  func(context.Context, string) (string, error) { return "0198f8f0-0000-7000-8000-000000000aaa", nil },
+		updateProfileByUserIDFunc: func(context.Context, string, CreateProfileParams) (int64, error) { return 1, nil },
+		updateAddressByProfileFunc: func(context.Context, string, CreateAddressParams) (int64, error) {
+			return 0, errors.New("update address failed")
+		},
+	}, stubTransactionProvider{})
+
+	_, err := service.Update(context.Background(), UpdateParams{
+		ID:       "0198f8f0-0000-7000-8000-000000000999",
+		Email:    "kit@example.com",
+		Username: "kit",
+		Status:   "active",
+		Profile:  &CreateProfileParams{Address: &CreateAddressParams{City: new("Bangkok")}},
+	})
+
+	require.Error(t, err)
+	assert.Equal(t, apperror.CodeInternal, requireAppError(t, err).Code())
+}
+
 func TestServicePatchValidatesRequest(t *testing.T) {
 	called := false
 	service := NewService(stubUserRepository{
