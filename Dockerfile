@@ -13,15 +13,17 @@ COPY internal ./internal
 
 RUN rm -rf gen/grpc gen/database \
 	&& buf generate \
-	&& fieldmapgen -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database \
-	&& patchfieldgen -config internal/feature/user/patchfields.yaml
+	&& mapgen fields \
+	&& mapgen patch \
+	&& mapgen filter \
+	&& mapgen map
 
 ARG TARGETOS
 ARG TARGETARCH
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
 	go build -trimpath -ldflags="-s -w" -o /out/grpc-sandbox ./cmd/server
 
-FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601
+FROM alpine:3.23@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40
 
 RUN apk add --no-cache ca-certificates tzdata \
 	&& addgroup -S app \

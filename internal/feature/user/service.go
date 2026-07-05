@@ -12,14 +12,6 @@ import (
 	"github.com/kitti12911/lib-util/v3/validator"
 )
 
-type patchData struct {
-	userFields    map[string]any
-	profileFields map[string]any
-	addressFields map[string]any
-	profile       CreateProfileParams
-	address       CreateAddressParams
-}
-
 type userRepository interface {
 	GetByID(ctx context.Context, id string) (*database.User, error)
 	CreateUser(ctx context.Context, params CreateParams) (*database.User, error)

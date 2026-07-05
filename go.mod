@@ -1,14 +1,14 @@
 module grpc-sandbox
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/dromara/carbon/v2 v2.6.16
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3
-	github.com/kitti12911/lib-async v1.5.2
-	github.com/kitti12911/lib-monitor v1.12.1
-	github.com/kitti12911/lib-orm/v3 v3.1.1
-	github.com/kitti12911/lib-util/v3 v3.15.1
+	github.com/kitti12911/lib-async v1.6.0
+	github.com/kitti12911/lib-monitor v1.13.0
+	github.com/kitti12911/lib-orm/v4 v4.0.0
+	github.com/kitti12911/lib-util/v3 v3.17.0
 	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
@@ -78,11 +78,11 @@ require (
 	go.opentelemetry.io/otel/sdk v1.43.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/mod v0.34.0 // indirect
-	golang.org/x/net v0.53.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260427160629-7cedc36a6bc4 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -2,6 +2,7 @@ package worker
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
 	workerv1 "grpc-sandbox/gen/grpc/worker/v1"
@@ -49,4 +50,26 @@ func TestPayloadFromProtoMarshalsStruct(t *testing.T) {
 	got, err := payloadFromProto(&workerv1.WorkerJob{Payload: payload})
 	require.NoError(t, err)
 	assert.JSONEq(t, `{"x":1}`, string(got))
+}
+
+// nonFiniteStruct holds a NaN number, which protojson (used by
+// structpb.Struct.MarshalJSON) refuses to encode — forcing the error path.
+func nonFiniteStruct() *structpb.Struct {
+	return &structpb.Struct{
+		Fields: map[string]*structpb.Value{
+			"bad": structpb.NewNumberValue(math.NaN()),
+		},
+	}
+}
+
+func TestPayloadFromProtoMarshalError(t *testing.T) {
+	t.Parallel()
+	_, err := payloadFromProto(&workerv1.WorkerJob{Payload: nonFiniteStruct()})
+	require.Error(t, err)
+}
+
+func TestSubmitParamsFromProtoMarshalError(t *testing.T) {
+	t.Parallel()
+	_, err := submitParamsFromProto(&workerv1.WorkerJob{Id: "job-1", Payload: nonFiniteStruct()})
+	require.Error(t, err)
 }

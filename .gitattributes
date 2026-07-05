@@ -1,1 +1,2 @@
-internal/feature/user/patch_generated.go linguist-generated=true
+gen/** linguist-generated=true
+**/*_generated.go linguist-generated=true

@@ -7,7 +7,7 @@ import (
 	userv1 "grpc-sandbox/gen/grpc/user/v1"
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v3"
+	orm "github.com/kitti12911/lib-orm/v4"
 	"github.com/kitti12911/lib-util/v3/fieldmask"
 	"github.com/kitti12911/lib-util/v3/pagination"
 )
@@ -56,7 +56,7 @@ func (h *Handler) ListUsers(ctx context.Context, req *userv1.ListUsersRequest) (
 	result, err := h.userService.List(ctx, ListParams{
 		Limit:   page.Limit,
 		Offset:  page.Offset,
-		Filters: orm.FiltersFromProto(req.GetFilters()),
+		Filter:  orm.FilterFromProto(req.GetFilter()),
 		OrderBy: orm.OrderByFromProto(req.GetOrderBy()),
 	})
 	if err != nil {

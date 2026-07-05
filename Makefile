@@ -44,12 +44,18 @@ fix:
 	go fix ./...
 
 # ____________________ Generate Command ____________________
-gen: gen-proto gen-go
+# mapgen is zero-config: it discovers models, params structs, and proto types
+# by convention. See lib-orm/cmd/mapgen for the conventions and directives.
+gen: gen-proto gen-go gen-mappers
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/v3/cmd/fieldmapgen@v3.0.1 -model-dir internal/database -root User -out gen/database/fieldmap_generated.go -package database
-	go run github.com/kitti12911/lib-orm/v3/cmd/patchfieldgen@v3.0.1 -config internal/feature/user/patchfields.yaml
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 fields
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 patch
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 filter
+
+gen-mappers:
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 map
 
 gen-proto:
 	rm -rf gen/grpc

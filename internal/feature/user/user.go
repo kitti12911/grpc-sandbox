@@ -3,7 +3,7 @@ package user
 import (
 	"grpc-sandbox/internal/database"
 
-	orm "github.com/kitti12911/lib-orm/v3"
+	orm "github.com/kitti12911/lib-orm/v4"
 )
 
 type GetByIDParams struct {
@@ -56,7 +56,7 @@ type PatchParams struct {
 type ListParams struct {
 	Limit   int
 	Offset  int
-	Filters []orm.Filter
+	Filter  orm.Filter
 	OrderBy []orm.OrderBy
 }
 

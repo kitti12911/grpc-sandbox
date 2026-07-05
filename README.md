@@ -32,27 +32,23 @@ Optional:
 reusable CI entrypoints live in `scripts/ci/` so GitHub Actions can call the
 same commands with workflow-specific orchestration around them.
 
-| command                                            | purpose                                       |
-| -------------------------------------------------- | --------------------------------------------- |
-| `./scripts/ci/generate-code.sh`                    | generate protobuf, field-map, and PATCH code  |
-| `./scripts/ci/go-lint.sh`                          | run `go vet` and `golangci-lint`              |
-| `./scripts/ci/go-test.sh`                          | run tests with filtered coverage              |
-| `./scripts/ci/markdownlint.sh`                     | run Markdown linting                          |
-| `./scripts/ci/security-scan.sh`                    | run `govulncheck` and Semgrep                 |
-| `./scripts/ci/supply-chain-scan.sh`                | run Trivy and Gitleaks                        |
-| `./scripts/ci/semantic-release-publish.sh`         | publish the semantic release                  |
-| `./scripts/ci/fast-forward-prerelease-branches.sh` | fast-forward `uat` and `develop` after `main` |
-| `./scripts/ci/update-helm-image-values.sh`         | update homelab GitOps image values            |
+| command                                            | purpose                                              |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| `./scripts/ci/generate-code.sh`                    | generate protobuf, field-map, PATCH, and mapper code |
+| `./scripts/ci/go-lint.sh`                          | run `go vet` and `golangci-lint`                     |
+| `./scripts/ci/go-test.sh`                          | run tests with filtered coverage                     |
+| `./scripts/ci/markdownlint.sh`                     | run Markdown linting                                 |
+| `./scripts/ci/security-scan.sh`                    | run `govulncheck` and Semgrep                        |
+| `./scripts/ci/supply-chain-scan.sh`                | run Trivy and Gitleaks                               |
+| `./scripts/ci/semantic-release-publish.sh`         | publish the semantic release                         |
+| `./scripts/ci/fast-forward-prerelease-branches.sh` | fast-forward `uat` and `develop` after `main`        |
+| `./scripts/ci/update-helm-image-values.sh`         | update homelab GitOps image values                   |
 
 GitHub Actions uses `TOOLCHAIN_REGISTRY` and `TOOLCHAIN_IMAGE_NAMESPACE` to
 resolve shared CI toolchain images, and `IMAGE_REGISTRY` plus `IMAGE_NAMESPACE`
 to publish the application image. `DEPLOY_IMAGE_REGISTRY` and
 `DEPLOY_IMAGE_NAMESPACE` only affect the homelab GitOps values update and can be
 omitted outside that workflow.
-
-`GO_TEST_RACE=true` or `GO_TEST_CGO=true` requires a C compiler in the selected
-toolchain image. `grpc-sandbox` sets `GO_TEST_RACE=false` in GitHub Actions
-while using `image-toolchain` v1.1.0 because that image does not include one.
 
 ## project structure
 
@@ -108,34 +104,26 @@ make gen
 - Bun field-map generation into `gen/database`
 - PATCH field-mask extraction generation into
   `internal/feature/user/patch_generated.go`
+- proto mapper generation into `internal/feature/user/mapper_generated.go`
 
-The generated field maps and patch extractor come from
-[`github.com/kitti12911/lib-orm/v3`](https://github.com/kitti12911/lib-orm)
-generator commands.
+The generators come from
+[`github.com/kitti12911/lib-orm/v4`](https://github.com/kitti12911/lib-orm)
+and are **zero-config** — they discover everything by naming convention (see
+the lib-orm README for the conventions and `//mapgen:*` directives).
 
 Generator notes:
 
-- `fieldmapgen` reads Bun models under `internal/database` and generates field
-  maps plus validator functions in `gen/database`.
-- `patchfieldgen` reads `internal/feature/user/user.go` and generates
-  `patchFields(params PatchParams)`.
-- `-root-selector params.User` means patch values are read from `params.User`.
-- `-paths-selector params.Fields` means field mask paths are read from
-  `params.Fields`.
-- `-bucket root:userFields:fieldmap.IsUserRootField` routes top-level paths
-  such as `email` into `data.userFields`.
-- `-bucket profile:profileFields:fieldmap.IsUserProfileField` routes paths
-  such as `profile.first_name` into `data.profileFields`.
-- `-bucket profile.address:addressFields:fieldmap.IsUserAddressField` routes
-  paths such as `profile.address.city` into `data.addressFields`.
-- `-copy params.User.Profile:data.profile` copies the full profile value when
-  present, so PATCH can create a missing profile row before updating it.
-- `-copy params.User.Profile.Address:data.address:params.User.Profile` copies
-  address with a profile nil guard, so generated code does not dereference a
-  nil profile.
-
-In short, buckets create SQL update maps, while copies carry nested create data
-for create-if-missing PATCH flows.
+- `mapgen fields` reads Bun models under `internal/database` and generates
+  field/column maps in `gen/database`.
+- `mapgen patch` finds `PatchParams` and generates the `patchData` struct plus
+  `patchFields(params PatchParams)`; buckets and nil-guarded copies are derived
+  from the payload struct's `field:"..."`-tagged shape.
+- `mapgen filter` generates `applyFilter`/`applyOrderBy` plus the custom-filter
+  registry (`//mapgen:filter col=<name>` functions back virtual columns).
+- `mapgen map` reads both the params structs and the generated proto types,
+  then emits mappers by field intersection — including the string↔enum
+  bridges. The worker feature has no bun root model, so the generator skips it
+  and its hand-written fallible mapper stays.
 
 ## run locally
 
