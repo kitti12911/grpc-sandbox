@@ -47,12 +47,7 @@ func (r *repository) GetByID(ctx context.Context, id string) (*database.User, er
 }
 
 func (r *repository) CreateUser(ctx context.Context, params CreateParams) (*database.User, error) {
-	user := &database.User{
-		Email:       params.Email,
-		Username:    params.Username,
-		DisplayName: params.DisplayName,
-		Status:      params.Status,
-	}
+	user := userModelFromCreateParams(params)
 
 	if err := r.db.IDB(ctx).NewInsert().
 		Model(user).
@@ -72,12 +67,7 @@ func (r *repository) CreateProfile(
 	userID string,
 	params CreateProfileParams,
 ) (*database.UserProfile, error) {
-	profile := &database.UserProfile{
-		UserID:      userID,
-		FirstName:   params.FirstName,
-		LastName:    params.LastName,
-		PhoneNumber: params.PhoneNumber,
-	}
+	profile := userProfileModelFromCreateProfileParams(userID, params)
 
 	if err := r.db.IDB(ctx).NewInsert().
 		Model(profile).
@@ -94,15 +84,7 @@ func (r *repository) CreateAddress(
 	userProfileID string,
 	params CreateAddressParams,
 ) (*database.UserAddress, error) {
-	address := &database.UserAddress{
-		UserProfileID: userProfileID,
-		Line1:         params.Line1,
-		Line2:         params.Line2,
-		City:          params.City,
-		State:         params.State,
-		PostalCode:    params.PostalCode,
-		CountryCode:   params.CountryCode,
-	}
+	address := userAddressModelFromCreateAddressParams(userProfileID, params)
 
 	if err := r.db.IDB(ctx).NewInsert().
 		Model(address).

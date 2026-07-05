@@ -101,6 +101,39 @@ func createAddressParamsFromProto(in *userv1.UserAddress) *CreateAddressParams {
 	return dst
 }
 
+// userModelFromCreateParams builds a database.User from CreateParams.
+func userModelFromCreateParams(params CreateParams) *database.User {
+	return &database.User{
+		Email:       params.Email,
+		Username:    params.Username,
+		DisplayName: params.DisplayName,
+		Status:      params.Status,
+	}
+}
+
+// userAddressModelFromCreateAddressParams builds a database.UserAddress from CreateAddressParams.
+func userAddressModelFromCreateAddressParams(userProfileID string, params CreateAddressParams) *database.UserAddress {
+	return &database.UserAddress{
+		UserProfileID: userProfileID,
+		Line1:         params.Line1,
+		Line2:         params.Line2,
+		City:          params.City,
+		State:         params.State,
+		PostalCode:    params.PostalCode,
+		CountryCode:   params.CountryCode,
+	}
+}
+
+// userProfileModelFromCreateProfileParams builds a database.UserProfile from CreateProfileParams.
+func userProfileModelFromCreateProfileParams(userID string, params CreateProfileParams) *database.UserProfile {
+	return &database.UserProfile{
+		UserID:      userID,
+		FirstName:   params.FirstName,
+		LastName:    params.LastName,
+		PhoneNumber: params.PhoneNumber,
+	}
+}
+
 // toProtoUserStatus maps a string to the userv1.UserStatus enum.
 func toProtoUserStatus(value string) userv1.UserStatus {
 	switch value {

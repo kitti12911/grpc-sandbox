@@ -50,12 +50,12 @@ gen: gen-proto gen-go gen-mappers
 
 gen-go:
 	rm -rf gen/database
-	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0 fields
-	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0 patch
-	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0 filter
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 fields
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 patch
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 filter
 
 gen-mappers:
-	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0 map
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 map
 
 gen-proto:
 	rm -rf gen/grpc

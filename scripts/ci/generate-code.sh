@@ -10,7 +10,7 @@ run_mapgen() {
 		return
 	fi
 
-	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0 "$@"
+	go run github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0 "$@"
 }
 
 rm -rf gen/grpc gen/database
